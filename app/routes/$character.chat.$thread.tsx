@@ -1,25 +1,73 @@
+import { json } from "@remix-run/node";
+import { useLoaderData, useParams } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
+import { format, parseISO, isSameDay } from "date-fns";
 
 export const meta: MetaFunction = () => {
     return [{ title: "Ophelia" }, { name: "description", content: "Chat with Ophelia" }];
 };
 
+export const loader = async () => {
+    return json([
+        {
+            content: "Hello!",
+            role: "user",
+            timestamp: "2024-10-17 22:05:30Z",
+        },
+        {
+            content: "Hi! Nice to meet you! I'm Ophelia.",
+            role: "assistant",
+            timestamp: "2024-10-17 22:05:45Z",
+        },
+        {
+            content: "Nice to meet you too!",
+            role: "user",
+            timestamp: "2024-10-17 22:06:00Z",
+        },
+        {
+            content: "What do you do for fun?",
+            role: "assistant",
+            timestamp: "2024-10-18 01:33:15Z",
+        },
+    ]);
+};
+
 export default function Chat() {
+    const params = useParams();
+    const messages = useLoaderData<typeof loader>();
     const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
+    let lastDate: Date | null = null;
     return (
         <div>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-            dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
-            ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat
-            nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit
-            anim id est laborum.
+            {messages.map((message, index) => {
+                const messageDate = parseISO(message.timestamp);
+                const showDateHeader = !lastDate || !isSameDay(lastDate, messageDate);
+                lastDate = messageDate;
+
+                return (
+                    <div key={index}>
+                        {showDateHeader && (
+                            <div className="text-center text-gray-500 my-4">{format(messageDate, "MMMM do, yyyy")}</div>
+                        )}
+                        <div className="w-full items-center rounded-lg my-2 py-1 hover:bg-zinc-800 flex justify-between">
+                            <div>
+                                <b className="px-4" style={{ fontSize: "1.25em" }}>
+                                    {message.role === "user" ? "Oliver" : "Ophelia"}
+                                </b>
+                                <p className="py-1 px-4">{message.content}</p>
+                            </div>
+                            <small className="px-4 text-gray-500 self-end">{format(messageDate, "hh:mm a")}</small>
+                        </div>
+                    </div>
+                );
+            })}
             <form>
                 <div className="flex items-center py-2 rounded-lg">
                     <textarea
                         id="chat"
                         rows={4}
                         className="block p-2.5 w-full text-sm rounded-lg border text-gray-900 bg-white border-pink-600 dark:bg-zinc-900 dark:placeholder-gray-400 dark:text-white"
-                        placeholder="Send a message to Ophelia!"
+                        placeholder={placeholder_message}
                     ></textarea>
                     <button
                         type="submit"
