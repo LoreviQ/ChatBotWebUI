@@ -7,7 +7,7 @@ export const meta: MetaFunction = () => {
 export default function Chat() {
     const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
     return (
-        <div className="container mx-auto max-w-2xl">
+        <div>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
             dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
             ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat
