@@ -1,39 +1,27 @@
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData, useParams } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
 import { format, parseISO, isSameDay } from "date-fns";
 
+interface Message {
+    timestamp: string;
+    role: string;
+    content: string;
+}
+
 export const meta: MetaFunction = () => {
     return [{ title: "Ophelia" }, { name: "description", content: "Chat with Ophelia" }];
 };
 
-export const loader = async () => {
-    return json([
-        {
-            content: "Hello!",
-            role: "user",
-            timestamp: "2024-10-17 22:05:30Z",
-        },
-        {
-            content: "Hi! Nice to meet you! I'm Ophelia.",
-            role: "assistant",
-            timestamp: "2024-10-17 22:05:45Z",
-        },
-        {
-            content: "Nice to meet you too!",
-            role: "user",
-            timestamp: "2024-10-17 22:06:00Z",
-        },
-        {
-            content: "What do you do for fun?",
-            role: "assistant",
-            timestamp: "2024-10-18 01:33:15Z",
-        },
-    ]);
-};
+export async function loader({ params }: LoaderFunctionArgs) {
+    console.log(params);
+    const response = await fetch(`http://localhost:5000/threads/${params.thread}/messages`);
+    const data: Message[] = await response.json();
+    return json(data);
+}
 
 export default function Chat() {
-    const params = useParams();
     const messages = useLoaderData<typeof loader>();
     const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
     let lastDate: Date | null = null;
