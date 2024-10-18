@@ -3,12 +3,18 @@ import { json } from "@remix-run/node";
 import { useLoaderData, useFetcher } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
 import { format, parseISO, isSameDay } from "date-fns";
+import React, { useRef, useEffect } from "react";
 
 interface Message {
     timestamp: string;
     role: string;
     content: string;
 }
+
+type FetcherData = {
+    ok: boolean;
+    [key: string]: any;
+};
 
 export const meta: MetaFunction = () => {
     return [{ title: "Ophelia" }, { name: "description", content: "Chat with Ophelia" }];
@@ -23,11 +29,14 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
 export async function action({ params, request }: ActionFunctionArgs) {
     const formData = await request.formData();
-    console.log(formData);
+    const content = formData.get("chat") as string;
+    if (!content) {
+        return json({ status: "error", message: "Message is empty" }, { status: 400 });
+    }
     const fetcherURL = `http://localhost:5000/threads/${params.thread}/messages`;
     const payload = {
         role: "user",
-        content: formData.get("chat"),
+        content: content,
     };
     await fetch(fetcherURL, {
         method: "POST",
@@ -40,10 +49,22 @@ export async function action({ params, request }: ActionFunctionArgs) {
 }
 
 export default function Chat() {
-    const fetcher = useFetcher();
+    const fetcher = useFetcher<FetcherData>();
     const messages = useLoaderData<typeof loader>();
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
     const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
     let lastDate: Date | null = null;
+
+    useEffect(
+        function resetFormOnSuccess() {
+            if (fetcher.state === "idle" && fetcher.data?.ok) {
+                if (textareaRef.current) {
+                    textareaRef.current.value = "";
+                }
+            }
+        },
+        [fetcher.state, fetcher.data]
+    );
 
     return (
         <div>
@@ -72,6 +93,7 @@ export default function Chat() {
             <fetcher.Form method="post">
                 <div className="flex items-center py-2 rounded-lg">
                     <textarea
+                        ref={textareaRef}
                         name="chat"
                         rows={4}
                         className="block p-2.5 w-full text-sm rounded-lg border text-gray-900 bg-white border-pink-600 dark:bg-zinc-900 dark:placeholder-gray-400 dark:text-white"
