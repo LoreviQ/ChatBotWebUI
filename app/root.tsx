@@ -1,6 +1,5 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
-import Header from "./components/header";
 
 import "./tailwind.css";
 import "./styles.css";
@@ -39,7 +38,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
     return (
         <div>
-            <Header />
             <div className="container mx-auto max-w-2xl pt-16">
                 <Outlet />
             </div>

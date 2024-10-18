@@ -6,6 +6,7 @@ import { format, parseISO, isSameDay } from "date-fns";
 import { useRef, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
+import { prefs } from "./../utils/cookies";
 
 import { api, endpoints } from "../utils/api";
 interface Message {
@@ -36,10 +37,12 @@ export const meta: MetaFunction = () => {
     return [{ title: "Ophelia" }, { name: "description", content: "Chat with Ophelia" }];
 };
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
     const response = await api.get(endpoints.threadMessages(params.thread!));
     const responseData: Message[] = await response.data;
-    return json(responseData, { status: response.status });
+    const cookieHeader = request.headers.get("Cookie");
+    const cookie = (await prefs.parse(cookieHeader)) || {};
+    return json({ messages: responseData, userPrefs: { debug: cookie.debug }, status: response.status });
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -57,7 +60,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
 export default function Chat() {
     const fetcher = useFetcher<FetcherData>();
-    const messages = useLoaderData<typeof loader>();
+    const loaderData = useLoaderData<typeof loader>();
     const lastMessageRef = useRef<HTMLDivElement>(null);
     const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
     let lastDate: Date | null = null;
@@ -72,7 +75,7 @@ export default function Chat() {
         if (lastMessageRef.current) {
             lastMessageRef.current.scrollIntoView({ behavior: "smooth" });
         }
-    }, [messages]);
+    }, [loaderData.messages]);
 
     // Clear the textarea when a message is sent
     useEffect(() => {
@@ -90,13 +93,13 @@ export default function Chat() {
     return (
         <div className="flex flex-col h-screen">
             <div className="overflow-auto flex-grow custom-scrollbar">
-                {messages.map((message, index) => {
+                {loaderData.messages.map((message, index) => {
                     const messageDate = parseISO(message.timestamp);
                     const showDateHeader = !lastDate || !isSameDay(lastDate, messageDate);
                     lastDate = messageDate;
 
                     return (
-                        <div key={index} ref={index === messages.length - 1 ? lastMessageRef : null}>
+                        <div key={index} ref={index === loaderData.messages.length - 1 ? lastMessageRef : null}>
                             {showDateHeader && (
                                 <div className="text-center text-text-muted-dark my-4">
                                     {format(messageDate, "MMMM do, yyyy")}
