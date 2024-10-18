@@ -72,11 +72,23 @@ export default function Chat() {
             <fetcher.Form method="post">
                 <div className="flex items-center py-2 rounded-lg">
                     <textarea
-                        id="chat"
                         name="chat"
                         rows={4}
                         className="block p-2.5 w-full text-sm rounded-lg border text-gray-900 bg-white border-pink-600 dark:bg-zinc-900 dark:placeholder-gray-400 dark:text-white"
                         placeholder={placeholder_message}
+                        onKeyDown={(e) => {
+                            const target = e.target as HTMLTextAreaElement;
+                            if (e.key === "Enter" && !e.altKey) {
+                                e.preventDefault();
+                                target.form?.requestSubmit();
+                            } else if (e.key === "Enter" && e.altKey) {
+                                e.preventDefault();
+                                const start = target.selectionStart;
+                                const end = target.selectionEnd;
+                                target.value = target.value.substring(0, start) + "\n" + target.value.substring(end);
+                                target.selectionStart = target.selectionEnd = start + 1;
+                            }
+                        }}
                     />
                     <button
                         type="submit"
