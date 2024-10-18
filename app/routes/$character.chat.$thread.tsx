@@ -1,6 +1,6 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useLoaderData, useParams } from "@remix-run/react";
+import { useLoaderData, useFetcher } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
 import { format, parseISO, isSameDay } from "date-fns";
 
@@ -21,10 +21,30 @@ export async function loader({ params }: LoaderFunctionArgs) {
     return json(data);
 }
 
+export async function action({ params, request }: ActionFunctionArgs) {
+    const formData = await request.formData();
+    console.log(formData);
+    const fetcherURL = `http://localhost:5000/threads/${params.thread}/messages`;
+    const payload = {
+        role: "user",
+        content: formData.get("chat"),
+    };
+    await fetch(fetcherURL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+    });
+    return json({ status: "success" });
+}
+
 export default function Chat() {
+    const fetcher = useFetcher();
     const messages = useLoaderData<typeof loader>();
     const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
     let lastDate: Date | null = null;
+
     return (
         <div>
             {messages.map((message, index) => {
@@ -49,14 +69,15 @@ export default function Chat() {
                     </div>
                 );
             })}
-            <form>
+            <fetcher.Form method="post">
                 <div className="flex items-center py-2 rounded-lg">
                     <textarea
                         id="chat"
+                        name="chat"
                         rows={4}
                         className="block p-2.5 w-full text-sm rounded-lg border text-gray-900 bg-white border-pink-600 dark:bg-zinc-900 dark:placeholder-gray-400 dark:text-white"
                         placeholder={placeholder_message}
-                    ></textarea>
+                    />
                     <button
                         type="submit"
                         className="inline-flex justify-center ps-4 p-2 text-pink-600 rounded-full cursor-pointer"
@@ -73,7 +94,7 @@ export default function Chat() {
                         <span className="sr-only">Send message</span>
                     </button>
                 </div>
-            </form>
+            </fetcher.Form>
         </div>
     );
 }
