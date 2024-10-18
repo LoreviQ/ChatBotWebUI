@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
 interface Message {
+    message_id: number;
     timestamp: string;
     role: string;
     content: string;
@@ -18,25 +19,11 @@ type FetcherData = {
     [key: string]: any;
 };
 
-export const meta: MetaFunction = () => {
-    return [{ title: "Ophelia" }, { name: "description", content: "Chat with Ophelia" }];
-};
-
-export async function loader({ params }: LoaderFunctionArgs) {
-    console.log(params);
-    const response = await fetch(`http://localhost:5000/threads/${params.thread}/messages`);
-    const data: Message[] = await response.json();
-    return json(data);
-}
-
-// Submit a message to the server
-export async function action({ params, request }: ActionFunctionArgs) {
-    const formData = await request.formData();
-    const content = formData.get("chat") as string;
+const postMessage = async (thread_id: string, content: string) => {
     if (!content) {
         return json({ status: "error", message: "Message is empty" }, { status: 400 });
     }
-    const fetcherURL = `http://localhost:5000/threads/${params.thread}/messages`;
+    const fetcherURL = `http://localhost:5000/threads/${thread_id}/messages`;
     const payload = {
         role: "user",
         content: content,
@@ -49,6 +36,32 @@ export async function action({ params, request }: ActionFunctionArgs) {
         body: JSON.stringify(payload),
     });
     return json({ status: "success" });
+};
+
+export const meta: MetaFunction = () => {
+    return [{ title: "Ophelia" }, { name: "description", content: "Chat with Ophelia" }];
+};
+
+export async function loader({ params }: LoaderFunctionArgs) {
+    const response = await fetch(`http://localhost:5000/threads/${params.thread}/messages`);
+    const data: Message[] = await response.json();
+    return json(data);
+}
+
+export async function action({ params, request }: ActionFunctionArgs) {
+    const formData = await request.formData();
+    switch (request.method) {
+        case "POST":
+            const content = formData.get("chat") as string;
+            return postMessage(params.thread!, content);
+        case "DELETE":
+            const message_id = formData.get("message_id") as string;
+            const url = `http://localhost:5000/messages/${message_id}`;
+            await fetch(url, {
+                method: "DELETE",
+            });
+            return json({ status: "success" });
+    }
 }
 
 export default function Chat() {
@@ -78,6 +91,14 @@ export default function Chat() {
         }
     }, [messages]);
 
+    // Delete messages click event
+    const deleteMessages = async (message_id: number) => {
+        const url = `http://localhost:5000/messages/${message_id}`;
+        await fetch(url, {
+            method: "DELETE",
+        });
+    };
+
     return (
         <div>
             <div className="flex flex-col h-screen">
@@ -100,9 +121,12 @@ export default function Chat() {
                                             <b className="px-4" style={{ fontSize: "1.25em" }}>
                                                 {message.role === "user" ? "Oliver" : "Ophelia"}
                                             </b>
-                                            <button className="px-4 text-primary-dark">
-                                                <FontAwesomeIcon icon={faTrash} />
-                                            </button>
+                                            <fetcher.Form method="delete">
+                                                <input type="hidden" name="message_id" value={message.message_id} />
+                                                <button type="submit" className="px-4 text-primary-dark">
+                                                    <FontAwesomeIcon icon={faTrash} />
+                                                </button>
+                                            </fetcher.Form>
                                         </div>
                                         <p className="py-1 px-4 break-words">{message.content}</p>
                                         <div className="flex justify-end">
