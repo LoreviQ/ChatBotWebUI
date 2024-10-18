@@ -90,23 +90,23 @@ export default function Chat() {
                         return (
                             <div key={index} ref={index === messages.length - 1 ? lastMessageRef : null}>
                                 {showDateHeader && (
-                                    <div className="text-center text-gray-500 my-4">
+                                    <div className="text-center text-text-muted-dark my-4">
                                         {format(messageDate, "MMMM do, yyyy")}
                                     </div>
                                 )}
-                                <div className="w-full items-center rounded-lg my-2 py-1 hover:bg-zinc-800 flex justify-between">
+                                <div className="w-full items-center rounded-lg my-2 py-1 hover:bg-hover-dark flex justify-between">
                                     <div className="flex flex-col w-full">
                                         <div className="flex justify-between">
                                             <b className="px-4" style={{ fontSize: "1.25em" }}>
                                                 {message.role === "user" ? "Oliver" : "Ophelia"}
                                             </b>
-                                            <button className="px-4 text-pink-600">
+                                            <button className="px-4 text-primary-dark">
                                                 <FontAwesomeIcon icon={faTrash} />
                                             </button>
                                         </div>
                                         <p className="py-1 px-4 break-words">{message.content}</p>
                                         <div className="flex justify-end">
-                                            <small className="px-4 text-gray-500 self-end">
+                                            <small className="px-4 text-text-muted-dark self-end">
                                                 {format(messageDate, "hh:mm a")}
                                             </small>
                                         </div>
@@ -122,7 +122,7 @@ export default function Chat() {
                             ref={textareaRef}
                             name="chat"
                             rows={4}
-                            className="block p-2.5 w-full text-sm rounded-lg border text-gray-900 bg-white border-pink-600 dark:bg-zinc-900 dark:placeholder-gray-400 dark:text-white"
+                            className="block p-2.5 w-full text-sm rounded-lg border text-gray-900 bg-white border-primary-dark dark:bg-bg-dark dark:placeholder-text-muted-dark dark:text-text-dark"
                             placeholder={placeholder_message}
                             onKeyDown={(e) => {
                                 const target = e.target as HTMLTextAreaElement;
@@ -141,7 +141,7 @@ export default function Chat() {
                         />
                         <button
                             type="submit"
-                            className="inline-flex justify-center ps-4 p-2 text-pink-600 rounded-full cursor-pointer"
+                            className="inline-flex justify-center ps-4 p-2 text-primary-dark rounded-full cursor-pointer"
                         >
                             <svg
                                 className="w-5 h-5 rotate-90 rtl:-rotate-90"
