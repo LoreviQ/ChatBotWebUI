@@ -4,6 +4,8 @@ import { useLoaderData, useFetcher } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
 import { format, parseISO, isSameDay } from "date-fns";
 import React, { useRef, useEffect } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
 interface Message {
     timestamp: string;
@@ -93,15 +95,22 @@ export default function Chat() {
                                     </div>
                                 )}
                                 <div className="w-full items-center rounded-lg my-2 py-1 hover:bg-zinc-800 flex justify-between">
-                                    <div>
-                                        <b className="px-4" style={{ fontSize: "1.25em" }}>
-                                            {message.role === "user" ? "Oliver" : "Ophelia"}
-                                        </b>
-                                        <p className="py-1 px-4">{message.content}</p>
+                                    <div className="flex flex-col w-full">
+                                        <div className="flex justify-between">
+                                            <b className="px-4" style={{ fontSize: "1.25em" }}>
+                                                {message.role === "user" ? "Oliver" : "Ophelia"}
+                                            </b>
+                                            <button className="px-4 text-pink-600">
+                                                <FontAwesomeIcon icon={faTrash} />
+                                            </button>
+                                        </div>
+                                        <p className="py-1 px-4 break-words">{message.content}</p>
+                                        <div className="flex justify-end">
+                                            <small className="px-4 text-gray-500 self-end">
+                                                {format(messageDate, "hh:mm a")}
+                                            </small>
+                                        </div>
                                     </div>
-                                    <small className="px-4 text-gray-500 self-end">
-                                        {format(messageDate, "hh:mm a")}
-                                    </small>
                                 </div>
                             </div>
                         );
