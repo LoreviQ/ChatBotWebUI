@@ -7,6 +7,8 @@ import React, { useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
+import { api, endpoints } from "../utils/api";
+
 interface Message {
     message_id: number;
     timestamp: string;
@@ -23,19 +25,12 @@ const postMessage = async (thread_id: string, content: string) => {
     if (!content) {
         return json({ status: "error", message: "Message is empty" }, { status: 400 });
     }
-    const fetcherURL = `http://localhost:5000/threads/${thread_id}/messages`;
     const payload = {
         role: "user",
         content: content,
     };
-    await fetch(fetcherURL, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-    });
-    return json({ status: "success" });
+    const response = await api.post(endpoints.threadMessages(thread_id), payload);
+    return json({ status: response.status });
 };
 
 export const meta: MetaFunction = () => {
@@ -43,9 +38,9 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader({ params }: LoaderFunctionArgs) {
-    const response = await fetch(`http://localhost:5000/threads/${params.thread}/messages`);
-    const data: Message[] = await response.json();
-    return json(data);
+    const response = await api.get(endpoints.threadMessages(params.thread!));
+    const responseData: Message[] = await response.data;
+    return json(responseData, { status: response.status });
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -56,11 +51,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
             return postMessage(params.thread!, content);
         case "DELETE":
             const message_id = formData.get("message_id") as string;
-            const url = `http://localhost:5000/messages/${message_id}`;
-            await fetch(url, {
-                method: "DELETE",
-            });
-            return json({ status: "success" });
+            const response = await api.delete(endpoints.message(message_id));
+            return json({ status: response.status });
     }
 }
 
@@ -90,14 +82,6 @@ export default function Chat() {
             lastMessageRef.current.scrollIntoView({ behavior: "smooth" });
         }
     }, [messages]);
-
-    // Delete messages click event
-    const deleteMessages = async (message_id: number) => {
-        const url = `http://localhost:5000/messages/${message_id}`;
-        await fetch(url, {
-            method: "DELETE",
-        });
-    };
 
     return (
         <div>
