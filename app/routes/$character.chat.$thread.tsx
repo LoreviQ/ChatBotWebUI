@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useLoaderData, useFetcher, useActionData } from "@remix-run/react";
+import { useLoaderData, useFetcher, useRevalidator } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
 import { format, parseISO, isSameDay } from "date-fns";
 import { useRef, useEffect, useState } from "react";
@@ -61,8 +61,9 @@ export default function Chat() {
     const lastMessageRef = useRef<HTMLDivElement>(null);
     const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
     let lastDate: Date | null = null;
+    let { revalidate } = useRevalidator();
 
-    // potentially remove this and use remix's built-in loading spinner
+    // potentially remove this and use remix
     const [isSpinning, setIsSpinning] = useState(false);
     const [textareaValue, setTextareaValue] = useState("");
 
@@ -79,6 +80,12 @@ export default function Chat() {
             setTextareaValue("");
         }
     }, [fetcher.data]);
+
+    // Revalidate the messages every second
+    useEffect(() => {
+        let id = setInterval(revalidate, 1000);
+        return () => clearInterval(id);
+    }, [revalidate]);
 
     return (
         <div>
