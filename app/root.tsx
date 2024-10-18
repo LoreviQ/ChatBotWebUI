@@ -38,8 +38,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
     return (
-        <div className="container mx-auto max-w-2xl pt-16">
-            <Outlet />
+        <div>
+            <Header />
+            <div className="container mx-auto max-w-2xl pt-16">
+                <Outlet />
+            </div>
         </div>
     );
 }

@@ -88,100 +88,97 @@ export default function Chat() {
     }, [revalidate]);
 
     return (
-        <div>
-            <div className="flex flex-col h-screen">
-                <div className="overflow-auto flex-grow custom-scrollbar">
-                    {messages.map((message, index) => {
-                        const messageDate = parseISO(message.timestamp);
-                        const showDateHeader = !lastDate || !isSameDay(lastDate, messageDate);
-                        lastDate = messageDate;
+        <div className="flex flex-col h-screen">
+            <div className="overflow-auto flex-grow custom-scrollbar">
+                {messages.map((message, index) => {
+                    const messageDate = parseISO(message.timestamp);
+                    const showDateHeader = !lastDate || !isSameDay(lastDate, messageDate);
+                    lastDate = messageDate;
 
-                        return (
-                            <div key={index} ref={index === messages.length - 1 ? lastMessageRef : null}>
-                                {showDateHeader && (
-                                    <div className="text-center text-text-muted-dark my-4">
-                                        {format(messageDate, "MMMM do, yyyy")}
+                    return (
+                        <div key={index} ref={index === messages.length - 1 ? lastMessageRef : null}>
+                            {showDateHeader && (
+                                <div className="text-center text-text-muted-dark my-4">
+                                    {format(messageDate, "MMMM do, yyyy")}
+                                </div>
+                            )}
+                            <div className="w-full items-center rounded-lg my-2 py-1 hover:bg-hover-dark flex justify-between">
+                                <div className="flex flex-col w-full">
+                                    <div className="flex justify-between">
+                                        <b className="px-4" style={{ fontSize: "1.25em" }}>
+                                            {message.role === "user" ? "Oliver" : "Ophelia"}
+                                        </b>
+                                        <fetcher.Form method="delete">
+                                            <input type="hidden" name="message_id" value={message.message_id} />
+                                            <button type="submit" className="px-4 text-primary-dark">
+                                                <FontAwesomeIcon icon={faTrash} />
+                                            </button>
+                                        </fetcher.Form>
                                     </div>
-                                )}
-                                <div className="w-full items-center rounded-lg my-2 py-1 hover:bg-hover-dark flex justify-between">
-                                    <div className="flex flex-col w-full">
-                                        <div className="flex justify-between">
-                                            <b className="px-4" style={{ fontSize: "1.25em" }}>
-                                                {message.role === "user" ? "Oliver" : "Ophelia"}
-                                            </b>
-                                            <fetcher.Form method="delete">
-                                                <input type="hidden" name="message_id" value={message.message_id} />
-                                                <button type="submit" className="px-4 text-primary-dark">
-                                                    <FontAwesomeIcon icon={faTrash} />
-                                                </button>
-                                            </fetcher.Form>
-                                        </div>
-                                        <p className="py-1 px-4 break-words">{message.content}</p>
-                                        <div className="flex justify-end">
-                                            <small className="px-4 text-text-muted-dark self-end">
-                                                {format(messageDate, "hh:mm a")}
-                                            </small>
-                                        </div>
+                                    <p className="py-1 px-4 break-words">{message.content}</p>
+                                    <div className="flex justify-end">
+                                        <small className="px-4 text-text-muted-dark self-end">
+                                            {format(messageDate, "hh:mm a")}
+                                        </small>
                                     </div>
                                 </div>
                             </div>
-                        );
-                    })}
-                </div>
-                <fetcher.Form method="get">
-                    <button
-                        type="submit"
-                        className="py-4 ps-4 pe-2 fa-lg text-primary-dark"
-                        onClick={() => setIsSpinning(!isSpinning)}
-                    >
-                        <FontAwesomeIcon className={isSpinning ? "fa-spin" : ""} icon={faArrowsRotate} />
-                    </button>
-                    <small className="text-text-muted-dark self-end">Get a response from Ophelia immediately</small>
-                </fetcher.Form>
-                <fetcher.Form method="post">
-                    <div className="flex items-center py-2 rounded-lg">
-                        <textarea
-                            name="chat"
-                            rows={4}
-                            className="block p-2.5 w-full text-sm rounded-lg border text-gray-900 bg-white border-primary-dark dark:bg-bg-dark dark:placeholder-text-muted-dark dark:text-text-dark"
-                            placeholder={placeholder_message}
-                            value={textareaValue}
-                            onChange={(e) => setTextareaValue(e.target.value)}
-                            onKeyDown={(e) => {
-                                const target = e.target as HTMLTextAreaElement;
-                                if (e.key === "Enter" && !e.altKey) {
-                                    e.preventDefault();
-                                    target.form?.requestSubmit();
-                                } else if (e.key === "Enter" && e.altKey) {
-                                    e.preventDefault();
-                                    const start = target.selectionStart;
-                                    const end = target.selectionEnd;
-                                    target.value =
-                                        target.value.substring(0, start) + "\n" + target.value.substring(end);
-                                    target.selectionStart = target.selectionEnd = start + 1;
-                                }
-                            }}
-                        />
-                        <div className="flex flex-col items-center">
-                            <button
-                                type="submit"
-                                className="inline-flex justify-center ps-4 p-2 text-primary-dark rounded-full cursor-pointer"
-                            >
-                                <svg
-                                    className="w-5 h-5 rotate-90 rtl:-rotate-90"
-                                    aria-hidden="true"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="currentColor"
-                                    viewBox="0 0 18 20"
-                                >
-                                    <path d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
-                                </svg>
-                                <span className="sr-only">Send message</span>
-                            </button>
                         </div>
-                    </div>
-                </fetcher.Form>
+                    );
+                })}
             </div>
+            <fetcher.Form method="get">
+                <button
+                    type="submit"
+                    className="py-4 ps-4 pe-2 fa-lg text-primary-dark"
+                    onClick={() => setIsSpinning(!isSpinning)}
+                >
+                    <FontAwesomeIcon className={isSpinning ? "fa-spin" : ""} icon={faArrowsRotate} />
+                </button>
+                <small className="text-text-muted-dark self-end">Get a response from Ophelia immediately</small>
+            </fetcher.Form>
+            <fetcher.Form method="post">
+                <div className="flex items-center py-2 rounded-lg">
+                    <textarea
+                        name="chat"
+                        rows={4}
+                        className="block p-2.5 w-full text-sm rounded-lg border text-gray-900 bg-white border-primary-dark dark:bg-bg-dark dark:placeholder-text-muted-dark dark:text-text-dark"
+                        placeholder={placeholder_message}
+                        value={textareaValue}
+                        onChange={(e) => setTextareaValue(e.target.value)}
+                        onKeyDown={(e) => {
+                            const target = e.target as HTMLTextAreaElement;
+                            if (e.key === "Enter" && !e.altKey) {
+                                e.preventDefault();
+                                target.form?.requestSubmit();
+                            } else if (e.key === "Enter" && e.altKey) {
+                                e.preventDefault();
+                                const start = target.selectionStart;
+                                const end = target.selectionEnd;
+                                target.value = target.value.substring(0, start) + "\n" + target.value.substring(end);
+                                target.selectionStart = target.selectionEnd = start + 1;
+                            }
+                        }}
+                    />
+                    <div className="flex flex-col items-center">
+                        <button
+                            type="submit"
+                            className="inline-flex justify-center ps-4 p-2 text-primary-dark rounded-full cursor-pointer"
+                        >
+                            <svg
+                                className="w-5 h-5 rotate-90 rtl:-rotate-90"
+                                aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="currentColor"
+                                viewBox="0 0 18 20"
+                            >
+                                <path d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
+                            </svg>
+                            <span className="sr-only">Send message</span>
+                        </button>
+                    </div>
+                </div>
+            </fetcher.Form>
         </div>
     );
 }
