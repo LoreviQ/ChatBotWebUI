@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useLoaderData, useFetcher } from "@remix-run/react";
+import { useLoaderData, useFetcher, useActionData } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
 import { format, parseISO, isSameDay } from "date-fns";
 import { useRef, useEffect, useState } from "react";
@@ -22,14 +22,14 @@ type FetcherData = {
 
 const postMessage = async (thread_id: string, content: string) => {
     if (!content) {
-        return json({ status: "error", message: "Message is empty" }, { status: 400 });
+        return json({ type: "error", status: 400 });
     }
     const payload = {
         role: "user",
         content: content,
     };
     const response = await api.post(endpoints.threadMessages(thread_id), payload);
-    return json({ status: response.status });
+    return json({ type: "post_message", status: response.status });
 };
 
 export const meta: MetaFunction = () => {
@@ -51,32 +51,20 @@ export async function action({ params, request }: ActionFunctionArgs) {
         case "DELETE":
             const message_id = formData.get("message_id") as string;
             const response = await api.delete(endpoints.message(message_id));
-            return json({ status: response.status });
+            return json({ type: "delete_messages", status: response.status });
     }
 }
 
 export default function Chat() {
     const fetcher = useFetcher<FetcherData>();
     const messages = useLoaderData<typeof loader>();
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
     const lastMessageRef = useRef<HTMLDivElement>(null);
     const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
     let lastDate: Date | null = null;
 
     // potentially remove this and use remix's built-in loading spinner
     const [isSpinning, setIsSpinning] = useState(false);
-
-    // Reset the form after a successful submission
-    useEffect(
-        function resetFormOnSuccess() {
-            if (fetcher.state === "idle" && fetcher.data?.ok) {
-                if (textareaRef.current) {
-                    textareaRef.current.value = "";
-                }
-            }
-        },
-        [fetcher.state, fetcher.data]
-    );
+    const [textareaValue, setTextareaValue] = useState("");
 
     // Scroll to the last message when a new message is added
     useEffect(() => {
@@ -84,6 +72,13 @@ export default function Chat() {
             lastMessageRef.current.scrollIntoView({ behavior: "smooth" });
         }
     }, [messages]);
+
+    // Clear the textarea when a message is sent
+    useEffect(() => {
+        if (fetcher.data?.type === "post_message") {
+            setTextareaValue("");
+        }
+    }, [fetcher.data]);
 
     return (
         <div>
@@ -139,11 +134,12 @@ export default function Chat() {
                 <fetcher.Form method="post">
                     <div className="flex items-center py-2 rounded-lg">
                         <textarea
-                            ref={textareaRef}
                             name="chat"
                             rows={4}
                             className="block p-2.5 w-full text-sm rounded-lg border text-gray-900 bg-white border-primary-dark dark:bg-bg-dark dark:placeholder-text-muted-dark dark:text-text-dark"
                             placeholder={placeholder_message}
+                            value={textareaValue}
+                            onChange={(e) => setTextareaValue(e.target.value)}
                             onKeyDown={(e) => {
                                 const target = e.target as HTMLTextAreaElement;
                                 if (e.key === "Enter" && !e.altKey) {
