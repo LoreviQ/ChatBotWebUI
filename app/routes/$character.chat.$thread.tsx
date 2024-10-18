@@ -3,12 +3,11 @@ import { json } from "@remix-run/node";
 import { useLoaderData, useFetcher } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
 import { format, parseISO, isSameDay } from "date-fns";
-import React, { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 
 import { api, endpoints } from "../utils/api";
-
 interface Message {
     message_id: number;
     timestamp: string;
@@ -63,6 +62,9 @@ export default function Chat() {
     const lastMessageRef = useRef<HTMLDivElement>(null);
     const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
     let lastDate: Date | null = null;
+
+    // potentially remove this and use remix's built-in loading spinner
+    const [isSpinning, setIsSpinning] = useState(false);
 
     // Reset the form after a successful submission
     useEffect(
@@ -124,6 +126,16 @@ export default function Chat() {
                         );
                     })}
                 </div>
+                <fetcher.Form method="get">
+                    <button
+                        type="submit"
+                        className="py-4 ps-4 pe-2 fa-lg text-primary-dark"
+                        onClick={() => setIsSpinning(!isSpinning)}
+                    >
+                        <FontAwesomeIcon className={isSpinning ? "fa-spin" : ""} icon={faArrowsRotate} />
+                    </button>
+                    <small className="text-text-muted-dark self-end">Get a response from Ophelia immediately</small>
+                </fetcher.Form>
                 <fetcher.Form method="post">
                     <div className="flex items-center py-2 rounded-lg">
                         <textarea
@@ -147,21 +159,23 @@ export default function Chat() {
                                 }
                             }}
                         />
-                        <button
-                            type="submit"
-                            className="inline-flex justify-center ps-4 p-2 text-primary-dark rounded-full cursor-pointer"
-                        >
-                            <svg
-                                className="w-5 h-5 rotate-90 rtl:-rotate-90"
-                                aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="currentColor"
-                                viewBox="0 0 18 20"
+                        <div className="flex flex-col items-center">
+                            <button
+                                type="submit"
+                                className="inline-flex justify-center ps-4 p-2 text-primary-dark rounded-full cursor-pointer"
                             >
-                                <path d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
-                            </svg>
-                            <span className="sr-only">Send message</span>
-                        </button>
+                                <svg
+                                    className="w-5 h-5 rotate-90 rtl:-rotate-90"
+                                    aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="currentColor"
+                                    viewBox="0 0 18 20"
+                                >
+                                    <path d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
+                                </svg>
+                                <span className="sr-only">Send message</span>
+                            </button>
+                        </div>
                     </div>
                 </fetcher.Form>
             </div>
