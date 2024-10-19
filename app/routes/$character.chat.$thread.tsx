@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData, useFetcher, useRevalidator } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
-import { format, parseISO, isSameDay } from "date-fns";
+import { format, parseISO, isSameDay, isToday, addDays } from "date-fns";
 import { useRef, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
@@ -97,13 +97,14 @@ export default function Chat() {
                     }
                     const showDateHeader = !lastDate || !isSameDay(lastDate, messageDate);
                     lastDate = messageDate;
+                    const isLastMessage = index === messages.length - 1;
                     return (
                         <div key={index} ref={index === loaderData.messages.length - 1 ? lastMessageRef : null}>
-                            {showDateHeader && (
+                            {isLastMessage ? (
                                 <div className="text-center text-text-muted-dark my-4">
                                     {format(messageDate, "MMMM do, yyyy")}
                                 </div>
-                            )}
+                            ) : null}
                             <div className="w-full items-center rounded-lg my-2 py-1 hover:bg-hover-dark flex justify-between">
                                 <div className="flex flex-col w-full">
                                     <div className="flex justify-between">
@@ -125,6 +126,11 @@ export default function Chat() {
                                     </div>
                                 </div>
                             </div>
+                            {showDateHeader && !isToday(messageDate) && (
+                                <div className="text-center text-text-muted-dark my-4">
+                                    {format(addDays(messageDate, 1), "MMMM do, yyyy")}
+                                </div>
+                            )}
                         </div>
                     );
                 })}
