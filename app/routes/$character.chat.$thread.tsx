@@ -61,7 +61,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 export default function Chat() {
     const fetcher = useFetcher<FetcherData>();
     const loaderData = useLoaderData<typeof loader>();
-    const lastMessageRef = useRef<HTMLDivElement>(null);
     const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
     let lastDate: Date | null = null;
     let { revalidate } = useRevalidator();
@@ -92,14 +91,15 @@ export default function Chat() {
                 {messages.map((message, index) => {
                     const messageDate = parseISO(message.timestamp);
                     const now = new Date();
-                    if (messageDate > now && !loaderData.userPrefs.debug) {
+                    const scheduledMessage = messageDate > now;
+                    if (scheduledMessage && !loaderData.userPrefs.debug) {
                         return null;
                     }
                     const showDateHeader = !lastDate || !isSameDay(lastDate, messageDate);
                     lastDate = messageDate;
                     const isLastMessage = index === messages.length - 1;
                     return (
-                        <div key={index} ref={index === loaderData.messages.length - 1 ? lastMessageRef : null}>
+                        <div key={index}>
                             {isLastMessage ? (
                                 <div className="text-center text-text-muted-dark my-4">
                                     {format(messageDate, "MMMM do, yyyy")}
@@ -120,7 +120,11 @@ export default function Chat() {
                                     </div>
                                     <p className="py-1 px-4 break-words">{message.content}</p>
                                     <div className="flex justify-end">
-                                        <small className="px-4 text-text-muted-dark self-end">
+                                        <small
+                                            className={`px-4 self-end ${
+                                                scheduledMessage ? "text-yellow-500" : "text-text-muted-dark"
+                                            }`}
+                                        >
                                             {format(messageDate, "hh:mm a")}
                                         </small>
                                     </div>
