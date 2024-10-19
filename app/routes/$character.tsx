@@ -41,9 +41,8 @@ export default function Header() {
             >
                 <fetcher.Form
                     className="p-4"
-                    method="post"
                     onChange={(e) => {
-                        submit(e.currentTarget);
+                        submit(e.currentTarget, { method: "post", navigate: false });
                     }}
                 >
                     <label className="inline-flex items-center cursor-pointer">
