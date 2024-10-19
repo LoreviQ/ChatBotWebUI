@@ -65,17 +65,13 @@ export default function Chat() {
     const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
     let lastDate: Date | null = null;
     let { revalidate } = useRevalidator();
+    const messages = loaderData.messages.sort((a, b) => {
+        return parseISO(b.timestamp).getTime() - parseISO(a.timestamp).getTime();
+    });
 
     // potentially remove this and use remix
     const [isSpinning, setIsSpinning] = useState(false);
     const [textareaValue, setTextareaValue] = useState("");
-
-    // Scroll to the last message when a new message is added
-    useEffect(() => {
-        if (lastMessageRef.current) {
-            lastMessageRef.current.scrollIntoView({ behavior: "smooth" });
-        }
-    }, [loaderData.messages]);
 
     // Clear the textarea when a message is sent
     useEffect(() => {
@@ -92,12 +88,15 @@ export default function Chat() {
 
     return (
         <div className="flex flex-col h-screen">
-            <div className="overflow-auto flex-grow custom-scrollbar">
-                {loaderData.messages.map((message, index) => {
+            <div className="overflow-auto flex flex-grow flex-col-reverse custom-scrollbar">
+                {messages.map((message, index) => {
                     const messageDate = parseISO(message.timestamp);
+                    const now = new Date();
+                    if (messageDate > now && !loaderData.userPrefs.debug) {
+                        return null;
+                    }
                     const showDateHeader = !lastDate || !isSameDay(lastDate, messageDate);
                     lastDate = messageDate;
-
                     return (
                         <div key={index} ref={index === loaderData.messages.length - 1 ? lastMessageRef : null}>
                             {showDateHeader && (
