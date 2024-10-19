@@ -34,10 +34,10 @@ export default function Header() {
         <div>
             <div
                 className="
-                absolute top-0 left-0 w-full h-20 flex items-center
-                backdrop-blur-sm backdrop-saturate-200 backdrop-contrast-150 bg-bg-dark/50 
-                border-double border-b-4 border-primary-dark
-            "
+                    absolute top-0 left-0 w-full h-20 flex items-center
+                    backdrop-blur-sm backdrop-saturate-200 backdrop-contrast-150 bg-bg-dark/50 
+                    border-double border-b-4 border-primary-dark
+                "
             >
                 <fetcher.Form
                     className="p-4"
