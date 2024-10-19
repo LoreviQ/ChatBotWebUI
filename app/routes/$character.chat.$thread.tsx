@@ -56,17 +56,21 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
     const formData = await request.formData();
     let response: Response;
-    switch (request.method) {
-        case "POST":
-            const content = formData.get("chat") as string;
-            return postMessage(params.thread!, content);
-        case "DELETE":
-            const message_id = formData.get("message_id") as string;
-            response = await api.delete(endpoints.message(message_id));
-            return json({ type: "delete_messages", status: response.status });
-        case "PATCH":
-            response = await api.get(endpoints.newMessage(params.thread!));
-            return json({ type: "get_messages", status: response.status });
+    try {
+        switch (request.method) {
+            case "POST":
+                const content = formData.get("chat") as string;
+                return postMessage(params.thread!, content);
+            case "DELETE":
+                const message_id = formData.get("message_id") as string;
+                response = await api.delete(endpoints.message(message_id));
+                return json({ type: "delete_messages", status: response.status });
+            case "PATCH":
+                response = await api.get(endpoints.newMessage(params.thread!));
+                return json({ type: "get_messages", status: response.status });
+        }
+    } catch (error) {
+        return json({ type: "error", status: 500 });
     }
 }
 
