@@ -15,6 +15,7 @@ export default {
           '"Segoe UI Symbol"',
           '"Noto Color Emoji"',
         ],
+        ophelia: ['"CyberwayRiders"', 'sans-serif'],
       },
       colors: {
         "bg-light": "#ffffff",

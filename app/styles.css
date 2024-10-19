@@ -20,3 +20,23 @@
 div { 
     padding-top:0 !important;
 }
+
+@font-face {
+    font-family: 'SDGlitch';
+    src: url('/fonts/SdglitchdemoRegular-YzROj.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'CyberwayRiders';
+    src: url('/fonts/CyberwayRiders-lg97d.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@layer base {
+  .font-outline {
+    -webkit-text-stroke: 1px theme("colors.primary-dark");
+  }
+}

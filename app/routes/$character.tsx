@@ -67,6 +67,9 @@ export default function Header() {
                     </label>
                 </fetcher.Form>
             </div>
+            <p className="absolute mt-4 left-1/2 transform -translate-x-1/2 text-5xl font-ophelia font-outline">
+                Ophelia
+            </p>
             <Outlet />
         </div>
     );
