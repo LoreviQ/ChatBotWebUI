@@ -47,14 +47,19 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 export async function action({ params, request }: ActionFunctionArgs) {
     const formData = await request.formData();
+    let response: Response;
     switch (request.method) {
         case "POST":
             const content = formData.get("chat") as string;
             return postMessage(params.thread!, content);
         case "DELETE":
             const message_id = formData.get("message_id") as string;
-            const response = await api.delete(endpoints.message(message_id));
+            response = await api.delete(endpoints.message(message_id));
             return json({ type: "delete_messages", status: response.status });
+        case "PATCH":
+            console.log("PATCH");
+            response = await api.get(endpoints.newMessage(params.thread!));
+            return json({ type: "get_messages", status: response.status });
     }
 }
 
@@ -111,7 +116,7 @@ export default function Chat() {
                                         <b className="px-4" style={{ fontSize: "1.25em" }}>
                                             {message.role === "user" ? "Oliver" : "Ophelia"}
                                         </b>
-                                        <fetcher.Form method="delete">
+                                        <fetcher.Form method="DELETE">
                                             <input type="hidden" name="message_id" value={message.message_id} />
                                             <button type="submit" className="px-4 text-primary-dark">
                                                 <FontAwesomeIcon icon={faTrash} />
@@ -139,17 +144,13 @@ export default function Chat() {
                     );
                 })}
             </div>
-            <fetcher.Form method="get">
-                <button
-                    type="submit"
-                    className="py-4 ps-4 pe-2 fa-lg text-primary-dark"
-                    onClick={() => setIsSpinning(!isSpinning)}
-                >
+            <fetcher.Form method="PATCH">
+                <button type="submit" className="py-4 ps-4 pe-2 fa-lg text-primary-dark">
                     <FontAwesomeIcon className={isSpinning ? "fa-spin" : ""} icon={faArrowsRotate} />
                 </button>
                 <small className="text-text-muted-dark self-end">Get a response from Ophelia immediately</small>
             </fetcher.Form>
-            <fetcher.Form method="post">
+            <fetcher.Form method="POST">
                 <div className="flex items-center py-2 rounded-lg">
                     <textarea
                         name="chat"
