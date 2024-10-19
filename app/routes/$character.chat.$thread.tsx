@@ -9,6 +9,7 @@ import { faTrash, faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import { prefs } from "./../utils/cookies";
 
 import { api, endpoints } from "../utils/api";
+import { AxiosResponse } from "axios";
 interface Message {
     message_id: number;
     timestamp: string;
@@ -38,11 +39,18 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-    const response = await api.get(endpoints.threadMessages(params.thread!));
-    const responseData: Message[] = await response.data;
+    let responseData: Message[], status: number;
+    try {
+        const response = await api.get(endpoints.threadMessages(params.thread!));
+        responseData = await response.data;
+        status = response.status;
+    } catch (error) {
+        responseData = [];
+        status = 500;
+    }
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};
-    return json({ messages: responseData, userPrefs: { debug: cookie.debug }, status: response.status });
+    return json({ messages: responseData, userPrefs: { debug: cookie.debug }, status: status });
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -57,7 +65,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
             response = await api.delete(endpoints.message(message_id));
             return json({ type: "delete_messages", status: response.status });
         case "PATCH":
-            console.log("PATCH");
             response = await api.get(endpoints.newMessage(params.thread!));
             return json({ type: "get_messages", status: response.status });
     }
@@ -93,56 +100,64 @@ export default function Chat() {
     return (
         <div className="flex flex-col h-screen">
             <div className="overflow-auto flex flex-grow flex-col-reverse custom-scrollbar">
-                {messages.map((message, index) => {
-                    const messageDate = parseISO(message.timestamp);
-                    const now = new Date();
-                    const scheduledMessage = messageDate > now;
-                    if (scheduledMessage && !loaderData.userPrefs.debug) {
-                        return null;
-                    }
-                    const showDateHeader = !lastDate || !isSameDay(lastDate, messageDate);
-                    lastDate = messageDate;
-                    const isLastMessage = index === messages.length - 1;
-                    return (
-                        <div key={index}>
-                            {isLastMessage ? (
-                                <div className="text-center text-text-muted-dark my-4">
-                                    {format(messageDate, "MMMM do, yyyy")}
-                                </div>
-                            ) : null}
-                            <div className="w-full items-center rounded-lg my-2 py-1 hover:bg-hover-dark flex justify-between">
-                                <div className="flex flex-col w-full">
-                                    <div className="flex justify-between">
-                                        <b className="px-4" style={{ fontSize: "1.25em" }}>
-                                            {message.role === "user" ? "Oliver" : "Ophelia"}
-                                        </b>
-                                        <fetcher.Form method="DELETE">
-                                            <input type="hidden" name="message_id" value={message.message_id} />
-                                            <button type="submit" className="px-4 text-primary-dark">
-                                                <FontAwesomeIcon icon={faTrash} />
-                                            </button>
-                                        </fetcher.Form>
+                {messages.length > 0 ? (
+                    messages.map((message, index) => {
+                        const messageDate = parseISO(message.timestamp);
+                        const now = new Date();
+                        const scheduledMessage = messageDate > now;
+                        if (scheduledMessage && !loaderData.userPrefs.debug) {
+                            return null;
+                        }
+                        const showDateHeader = !lastDate || !isSameDay(lastDate, messageDate);
+                        lastDate = messageDate;
+                        const isLastMessage = index === messages.length - 1;
+                        return (
+                            <div key={index}>
+                                {isLastMessage ? (
+                                    <div className="text-center text-text-muted-dark my-4">
+                                        {format(messageDate, "MMMM do, yyyy")}
                                     </div>
-                                    <p className="py-1 px-4 break-words">{message.content}</p>
-                                    <div className="flex justify-end">
-                                        <small
-                                            className={`px-4 self-end ${
-                                                scheduledMessage ? "text-yellow-500" : "text-text-muted-dark"
-                                            }`}
-                                        >
-                                            {format(messageDate, "hh:mm a")}
-                                        </small>
+                                ) : null}
+                                <div className="w-full items-center rounded-lg my-2 py-1 hover:bg-hover-dark flex justify-between">
+                                    <div className="flex flex-col w-full">
+                                        <div className="flex justify-between">
+                                            <b className="px-4" style={{ fontSize: "1.25em" }}>
+                                                {message.role === "user" ? "Oliver" : "Ophelia"}
+                                            </b>
+                                            <fetcher.Form method="DELETE">
+                                                <input type="hidden" name="message_id" value={message.message_id} />
+                                                <button type="submit" className="px-4 text-primary-dark">
+                                                    <FontAwesomeIcon icon={faTrash} />
+                                                </button>
+                                            </fetcher.Form>
+                                        </div>
+                                        <p className="py-1 px-4 break-words">{message.content}</p>
+                                        <div className="flex justify-end">
+                                            <small
+                                                className={`px-4 self-end ${
+                                                    scheduledMessage ? "text-yellow-500" : "text-text-muted-dark"
+                                                }`}
+                                            >
+                                                {format(messageDate, "hh:mm a")}
+                                            </small>
+                                        </div>
                                     </div>
                                 </div>
+                                {showDateHeader && !isToday(messageDate) && (
+                                    <div className="text-center text-text-muted-dark my-4">
+                                        {format(addDays(messageDate, 1), "MMMM do, yyyy")}
+                                    </div>
+                                )}
                             </div>
-                            {showDateHeader && !isToday(messageDate) && (
-                                <div className="text-center text-text-muted-dark my-4">
-                                    {format(addDays(messageDate, 1), "MMMM do, yyyy")}
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
+                        );
+                    })
+                ) : (
+                    <div className="text-center text-text-muted-dark my-4">
+                        {loaderData.status === 500
+                            ? "Error getting messages from server"
+                            : "Send a message to Ophelia!"}
+                    </div>
+                )}
             </div>
             <fetcher.Form method="PATCH">
                 <button type="submit" className="py-4 ps-4 pe-2 fa-lg text-primary-dark">
