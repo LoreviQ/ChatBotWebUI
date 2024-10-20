@@ -9,9 +9,9 @@ import { faTrash, faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import { prefs } from "./../utils/cookies";
 
 import { api, endpoints } from "../utils/api";
-import { AxiosResponse } from "axios";
+
 interface Message {
-    message_id: number;
+    id: number;
     timestamp: string;
     role: string;
     content: string;
@@ -129,7 +129,7 @@ export default function Chat() {
                                                 {message.role === "user" ? "Oliver" : "Ophelia"}
                                             </b>
                                             <fetcher.Form method="DELETE">
-                                                <input type="hidden" name="message_id" value={message.message_id} />
+                                                <input type="hidden" name="message_id" value={message.id} />
                                                 <button type="submit" className="px-4 text-primary-dark">
                                                     <FontAwesomeIcon icon={faTrash} />
                                                 </button>
