@@ -3,7 +3,7 @@ import { json } from "@remix-run/node";
 import { useLoaderData, useFetcher, useRevalidator } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
 import { format, parseISO, isSameDay, isToday, addDays } from "date-fns";
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import { prefs } from "./../utils/cookies";
@@ -106,7 +106,8 @@ export default function Chat() {
             <div className="overflow-auto flex flex-grow flex-col-reverse custom-scrollbar">
                 {messages.length > 0 ? (
                     messages.map((message, index) => {
-                        const messageDate = parseISO(message.timestamp);
+                        console.log(message.timestamp);
+                        const messageDate = parseISO(message.timestamp + "Z");
                         const now = new Date();
                         const scheduledMessage = messageDate > now;
                         if (scheduledMessage && !loaderData.userPrefs.debug) {
