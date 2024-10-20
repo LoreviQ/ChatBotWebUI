@@ -56,9 +56,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
     return (
         <div>
-            <div className="container mx-auto max-w-2xl pt-16">
-                <Outlet />
-            </div>
+            <Outlet />
         </div>
     );
 }

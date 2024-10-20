@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { prefs } from "./../utils/cookies";
-import { useLoaderData, useFetcher, Outlet, useSubmit } from "@remix-run/react";
+import { useLoaderData, useFetcher, useSubmit, useOutlet } from "@remix-run/react";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
     const cookieHeader = request.headers.get("Cookie");
@@ -29,6 +29,7 @@ export default function Header() {
     const fetcher = useFetcher();
     const loaderData = useLoaderData<typeof loader>();
     const submit = useSubmit();
+    const outlet = useOutlet();
 
     return (
         <div>
@@ -70,7 +71,15 @@ export default function Header() {
             <p className="absolute mt-4 left-1/2 transform -translate-x-1/2 text-5xl font-ophelia font-outline">
                 Ophelia
             </p>
-            <Outlet />
+            {outlet ? (
+                <div className="container mx-auto max-w-2xl">{outlet}</div>
+            ) : (
+                <div className="flex">
+                    <div className="w-1/3"></div>
+                    <div className="w-1/3"></div>
+                    <div className="w-1/3"></div>
+                </div>
+            )}
         </div>
     );
 }

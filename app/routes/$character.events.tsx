@@ -6,12 +6,19 @@ import { format, parseISO, isSameDay, isToday, addDays, addSeconds } from "date-
 import { useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
+import type { Cookie } from "./../utils/cookies";
 import { prefs } from "./../utils/cookies";
 import { api, endpoints } from "../utils/api";
 
-interface Event {
+interface EventResponse {
     id: number;
     timestamp: string;
+    content: string;
+}
+
+interface Event {
+    id: number;
+    timestamp: Date;
     content: string;
 }
 
@@ -25,7 +32,7 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-    let responseData: Event[], status: number;
+    let responseData: EventResponse[], status: number;
     try {
         const response = await api.get(endpoints.characterEvents(params.character!));
         responseData = await response.data;
@@ -40,10 +47,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export default function Events() {
-    const fetcher = useFetcher<FetcherData>();
     const loaderData = useLoaderData<typeof loader>();
     let { revalidate } = useRevalidator();
-    let lastDate: Date | null = null;
+    const userPrefs = loaderData.userPrefs as Cookie;
 
     // process event data
     let events = loaderData.events.map((event) => {
@@ -66,13 +72,19 @@ export default function Events() {
         return () => clearInterval(id);
     }, [revalidate]);
 
+    return EventLog(events, userPrefs, loaderData.status);
+}
+
+export function EventLog(events: Event[], userPrefs: Cookie, status: number) {
+    let lastDate: Date | null = null;
+    const fetcher = useFetcher<FetcherData>();
     return (
         <div className="flex flex-col h-screen">
             <div className="overflow-auto flex flex-grow flex-col-reverse custom-scrollbar">
                 {events.length > 0 ? (
                     events.map((event, index) => {
                         const scheduledEvent = event.timestamp > new Date();
-                        if (scheduledEvent && !loaderData.userPrefs.debug) {
+                        if (scheduledEvent && !userPrefs.debug) {
                             return null;
                         }
                         const showDateHeader = !lastDate || !isSameDay(lastDate, event.timestamp);
@@ -118,9 +130,7 @@ export default function Events() {
                     })
                 ) : (
                     <div className="text-center text-text-muted-dark my-4">
-                        {loaderData.status === 500
-                            ? "Error getting messages from server"
-                            : "Send a message to Ophelia!"}
+                        {status === 500 ? "Error getting messages from server" : "Send a message to Ophelia!"}
                     </div>
                 )}
             </div>

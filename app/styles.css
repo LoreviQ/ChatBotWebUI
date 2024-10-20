@@ -17,10 +17,6 @@
     border-radius: 4px;
 }
 
-div { 
-    padding-top:0 !important;
-}
-
 @font-face {
     font-family: 'SDGlitch';
     src: url('/fonts/SdglitchdemoRegular-YzROj.ttf') format('truetype');
