@@ -16,12 +16,6 @@ interface EventResponse {
     content: string;
 }
 
-interface Event {
-    id: number;
-    timestamp: Date;
-    content: string;
-}
-
 type FetcherData = {
     ok: boolean;
     [key: string]: any;
@@ -60,11 +54,11 @@ export default function Events() {
     return EventLog(loaderData.events, userPrefs, loaderData.status);
 }
 
-export function EventLog(eventsT: EventResponse[], userPrefs: Cookie, status: number) {
+export function EventLog(eventResponse: EventResponse[], userPrefs: Cookie, status: number) {
     let lastDate: Date | null = null;
     const fetcher = useFetcher<FetcherData>();
     // process event data
-    let events = eventsT.map((event) => {
+    let events = eventResponse.map((event) => {
         return {
             ...event,
             timestamp: parseISO(event.timestamp + "Z"),
