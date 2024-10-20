@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData, useFetcher, useRevalidator } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
-import { format, parseISO, isSameDay, isToday, addDays } from "date-fns";
+import { format, parseISO, isSameDay, isToday, addDays, addSeconds } from "date-fns";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
@@ -80,17 +80,33 @@ export default function Chat() {
     const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
     let lastDate: Date | null = null;
     let { revalidate } = useRevalidator();
-    const messages = loaderData.messages.sort((a, b) => {
-        const timeDifference = parseISO(b.timestamp).getTime() - parseISO(a.timestamp).getTime();
+    // state vars - potentially remove this and use remix
+    const [isSpinning, setIsSpinning] = useState(false);
+    const [isTyping, setIsTyping] = useState(false);
+    const [textareaValue, setTextareaValue] = useState("");
+
+    // process message data
+    let messages = loaderData.messages.map((message) => {
+        return {
+            ...message,
+            timestamp: parseISO(message.timestamp + "Z"),
+        };
+    });
+    messages = messages.sort((a, b) => {
+        const timeDifference = b.timestamp.getTime() - a.timestamp.getTime();
         if (timeDifference !== 0) {
             return timeDifference;
         }
         return b.id - a.id;
     });
 
-    // potentially remove this and use remix
-    const [isSpinning, setIsSpinning] = useState(false);
-    const [textareaValue, setTextareaValue] = useState("");
+    useEffect(() => {
+        const now = new Date();
+        const isAnyMessageTyping = messages.some(
+            (message) => message.timestamp > now && message.timestamp < addSeconds(now, 30)
+        );
+        setIsTyping(isAnyMessageTyping);
+    }, [messages]);
 
     // Clear the textarea when a message is sent
     useEffect(() => {
@@ -110,21 +126,19 @@ export default function Chat() {
             <div className="overflow-auto flex flex-grow flex-col-reverse custom-scrollbar">
                 {messages.length > 0 ? (
                     messages.map((message, index) => {
-                        console.log(message.timestamp);
-                        const messageDate = parseISO(message.timestamp + "Z");
-                        const now = new Date();
-                        const scheduledMessage = messageDate > now;
+                        message.timestamp;
+                        const scheduledMessage = message.timestamp > new Date();
                         if (scheduledMessage && !loaderData.userPrefs.debug) {
                             return null;
                         }
-                        const showDateHeader = !lastDate || !isSameDay(lastDate, messageDate);
-                        lastDate = messageDate;
+                        const showDateHeader = !lastDate || !isSameDay(lastDate, message.timestamp);
+                        lastDate = message.timestamp;
                         const isLastMessage = index === messages.length - 1;
                         return (
                             <div key={index}>
                                 {isLastMessage ? (
                                     <div className="text-center text-text-muted-dark my-4">
-                                        {format(messageDate, "MMMM do, yyyy")}
+                                        {format(message.timestamp, "MMMM do, yyyy")}
                                     </div>
                                 ) : null}
                                 <div className="w-full items-center rounded-lg my-2 py-1 hover:bg-hover-dark flex justify-between">
@@ -147,14 +161,14 @@ export default function Chat() {
                                                     scheduledMessage ? "text-yellow-500" : "text-text-muted-dark"
                                                 }`}
                                             >
-                                                {format(messageDate, "hh:mm a")}
+                                                {format(message.timestamp, "hh:mm a")}
                                             </small>
                                         </div>
                                     </div>
                                 </div>
-                                {showDateHeader && !isToday(messageDate) && (
+                                {showDateHeader && !isToday(message.timestamp) && (
                                     <div className="text-center text-text-muted-dark my-4">
-                                        {format(addDays(messageDate, 1), "MMMM do, yyyy")}
+                                        {format(addDays(message.timestamp, 1), "MMMM do, yyyy")}
                                     </div>
                                 )}
                             </div>
@@ -168,8 +182,14 @@ export default function Chat() {
                     </div>
                 )}
             </div>
-            <fetcher.Form method="PATCH">
-                <button type="submit" className="py-4 ps-4 pe-2 fa-lg text-primary-dark">
+            {isTyping && (
+                <div className="flex items-center ps-8">
+                    <div className="loader me-6"></div>
+                    <small className="text-text-muted-dark">Ophelia is typing...</small>
+                </div>
+            )}
+            <fetcher.Form method="PATCH" className="py-4 ps-4">
+                <button type="submit" className="pe-2 fa-lg text-primary-dark">
                     <FontAwesomeIcon className={isSpinning ? "fa-spin" : ""} icon={faArrowsRotate} />
                 </button>
                 <small className="text-text-muted-dark self-end">Get a response from Ophelia immediately</small>
