@@ -9,6 +9,7 @@ import { faTrash, faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import { prefs } from "./../utils/cookies";
 
 import { api, endpoints } from "../utils/api";
+import type { Cookie } from "./../utils/cookies";
 
 interface Message {
     id: number;
@@ -75,18 +76,29 @@ export async function action({ params, request }: ActionFunctionArgs) {
 }
 
 export default function Chat() {
-    const fetcher = useFetcher<FetcherData>();
     const loaderData = useLoaderData<typeof loader>();
-    const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
-    let lastDate: Date | null = null;
     let { revalidate } = useRevalidator();
+    const userPrefs = loaderData.userPrefs as Cookie;
+
+    // Revalidate the messages every second
+    useEffect(() => {
+        let id = setInterval(revalidate, 1000);
+        return () => clearInterval(id);
+    }, [revalidate]);
+
+    return MessageLog(loaderData.messages, userPrefs, loaderData.status);
+}
+
+export function MessageLog(messageResponse: Message[], userPrefs: Cookie, status: number) {
+    const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
+    const fetcher = useFetcher<FetcherData>();
+    let lastDate: Date | null = null;
     // state vars - potentially remove this and use remix
     const [isSpinning, setIsSpinning] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
     const [textareaValue, setTextareaValue] = useState("");
-
     // process message data
-    let messages = loaderData.messages.map((message) => {
+    let messages = messageResponse.map((message) => {
         return {
             ...message,
             timestamp: parseISO(message.timestamp + "Z"),
@@ -114,20 +126,13 @@ export default function Chat() {
             setTextareaValue("");
         }
     }, [fetcher.data]);
-
-    // Revalidate the messages every second
-    useEffect(() => {
-        let id = setInterval(revalidate, 1000);
-        return () => clearInterval(id);
-    }, [revalidate]);
-
     return (
         <div className="flex flex-col h-screen">
             <div className="overflow-auto flex flex-grow flex-col-reverse custom-scrollbar">
                 {messages.length > 0 ? (
                     messages.map((message, index) => {
                         const scheduledMessage = message.timestamp > new Date();
-                        if (scheduledMessage && !loaderData.userPrefs.debug) {
+                        if (scheduledMessage && !userPrefs.debug) {
                             return null;
                         }
                         const showDateHeader = !lastDate || !isSameDay(lastDate, message.timestamp);
@@ -175,9 +180,7 @@ export default function Chat() {
                     })
                 ) : (
                     <div className="text-center text-text-muted-dark my-4">
-                        {loaderData.status === 500
-                            ? "Error getting messages from server"
-                            : "Send a message to Ophelia!"}
+                        {status === 500 ? "Error getting messages from server" : "Send a message to Ophelia!"}
                     </div>
                 )}
             </div>

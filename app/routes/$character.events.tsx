@@ -10,7 +10,7 @@ import type { Cookie } from "./../utils/cookies";
 import { prefs } from "./../utils/cookies";
 import { api, endpoints } from "../utils/api";
 
-interface EventResponse {
+interface Event {
     id: number;
     timestamp: string;
     content: string;
@@ -26,7 +26,7 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-    let responseData: EventResponse[], status: number;
+    let responseData: Event[], status: number;
     try {
         const response = await api.get(endpoints.characterEvents(params.character!));
         responseData = await response.data;
@@ -54,7 +54,7 @@ export default function Events() {
     return EventLog(loaderData.events, userPrefs, loaderData.status);
 }
 
-export function EventLog(eventResponse: EventResponse[], userPrefs: Cookie, status: number) {
+export function EventLog(eventResponse: Event[], userPrefs: Cookie, status: number) {
     let lastDate: Date | null = null;
     const fetcher = useFetcher<FetcherData>();
     // process event data
