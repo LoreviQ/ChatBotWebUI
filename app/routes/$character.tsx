@@ -2,11 +2,29 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { prefs } from "./../utils/cookies";
 import { useLoaderData, useFetcher, useSubmit, useOutlet } from "@remix-run/react";
+import { EventLog } from "./$character.events";
+import type { Cookie } from "./../utils/cookies";
+import { api, endpoints } from "../utils/api";
+
+interface EventResponse {
+    id: number;
+    timestamp: string;
+    content: string;
+}
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
+    let responseData: EventResponse[], status: number;
+    try {
+        const response = await api.get(endpoints.characterEvents(params.character!));
+        responseData = await response.data;
+        status = response.status;
+    } catch (error) {
+        responseData = [];
+        status = 500;
+    }
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};
-    return json({ userPrefs: { debug: cookie.debug } });
+    return json({ events: responseData, userPrefs: { debug: cookie.debug }, status: status });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -28,6 +46,7 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function Header() {
     const fetcher = useFetcher();
     const loaderData = useLoaderData<typeof loader>();
+    const userPrefs = loaderData.userPrefs as Cookie;
     const submit = useSubmit();
     const outlet = useOutlet();
 
@@ -75,7 +94,7 @@ export default function Header() {
                 <div className="container mx-auto max-w-2xl">{outlet}</div>
             ) : (
                 <div className="flex">
-                    <div className="w-1/3"></div>
+                    <div className="w-1/3">{EventLog(loaderData.events, userPrefs, loaderData.status)}</div>
                     <div className="w-1/3"></div>
                     <div className="w-1/3"></div>
                 </div>

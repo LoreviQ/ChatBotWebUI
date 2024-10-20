@@ -51,8 +51,20 @@ export default function Events() {
     let { revalidate } = useRevalidator();
     const userPrefs = loaderData.userPrefs as Cookie;
 
+    // Revalidate the messages every second
+    useEffect(() => {
+        let id = setInterval(revalidate, 1000);
+        return () => clearInterval(id);
+    }, [revalidate]);
+
+    return EventLog(loaderData.events, userPrefs, loaderData.status);
+}
+
+export function EventLog(eventsT: EventResponse[], userPrefs: Cookie, status: number) {
+    let lastDate: Date | null = null;
+    const fetcher = useFetcher<FetcherData>();
     // process event data
-    let events = loaderData.events.map((event) => {
+    let events = eventsT.map((event) => {
         return {
             ...event,
             timestamp: parseISO(event.timestamp + "Z"),
@@ -65,19 +77,6 @@ export default function Events() {
         }
         return b.id - a.id;
     });
-
-    // Revalidate the messages every second
-    useEffect(() => {
-        let id = setInterval(revalidate, 1000);
-        return () => clearInterval(id);
-    }, [revalidate]);
-
-    return EventLog(events, userPrefs, loaderData.status);
-}
-
-export function EventLog(events: Event[], userPrefs: Cookie, status: number) {
-    let lastDate: Date | null = null;
-    const fetcher = useFetcher<FetcherData>();
     return (
         <div className="flex flex-col h-screen">
             <div className="overflow-auto flex flex-grow flex-col-reverse custom-scrollbar">
