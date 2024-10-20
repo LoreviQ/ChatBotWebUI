@@ -10,11 +10,11 @@ import type { Cookie } from "./../utils/cookies";
 import { prefs } from "./../utils/cookies";
 import { api, endpoints } from "../utils/api";
 
-interface Event {
+export type Event = {
     id: number;
     timestamp: string;
     content: string;
-}
+};
 
 type FetcherData = {
     ok: boolean;
@@ -51,10 +51,10 @@ export default function Events() {
         return () => clearInterval(id);
     }, [revalidate]);
 
-    return EventLog(loaderData.events, userPrefs, loaderData.status);
+    return EventLog(loaderData.events, userPrefs, loaderData.status, false);
 }
 
-export function EventLog(eventResponse: Event[], userPrefs: Cookie, status: number) {
+export function EventLog(eventResponse: Event[], userPrefs: Cookie, status: number, component: boolean) {
     let lastDate: Date | null = null;
     const fetcher = useFetcher<FetcherData>();
     // process event data
@@ -73,7 +73,11 @@ export function EventLog(eventResponse: Event[], userPrefs: Cookie, status: numb
     });
     return (
         <div className="flex flex-col h-screen">
-            <div className="overflow-auto flex flex-grow flex-col-reverse custom-scrollbar">
+            <div
+                className={`overflow-auto flex flex-grow flex-col-reverse ${
+                    component ? "hidden-scrollbar" : "custom-scrollbar"
+                }`}
+            >
                 {events.length > 0 ? (
                     events.map((event, index) => {
                         const scheduledEvent = event.timestamp > new Date();

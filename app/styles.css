@@ -17,6 +17,15 @@
     border-radius: 4px;
 }
 
+.hidden-scrollbar {
+    -ms-overflow-style: none; 
+    scrollbar-width: none;  
+}
+
+.hidden-scrollbar::-webkit-scrollbar {
+    display: none; 
+}
+
 @font-face {
     font-family: 'SDGlitch';
     src: url('/fonts/SdglitchdemoRegular-YzROj.ttf') format('truetype');

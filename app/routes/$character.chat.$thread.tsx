@@ -11,12 +11,12 @@ import { prefs } from "./../utils/cookies";
 import { api, endpoints } from "../utils/api";
 import type { Cookie } from "./../utils/cookies";
 
-interface Message {
+export type Message = {
     id: number;
     timestamp: string;
     role: string;
     content: string;
-}
+};
 
 type FetcherData = {
     ok: boolean;
