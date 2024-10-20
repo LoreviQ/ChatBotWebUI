@@ -81,7 +81,11 @@ export default function Chat() {
     let lastDate: Date | null = null;
     let { revalidate } = useRevalidator();
     const messages = loaderData.messages.sort((a, b) => {
-        return parseISO(b.timestamp).getTime() - parseISO(a.timestamp).getTime();
+        const timeDifference = parseISO(b.timestamp).getTime() - parseISO(a.timestamp).getTime();
+        if (timeDifference !== 0) {
+            return timeDifference;
+        }
+        return b.id - a.id;
     });
 
     // potentially remove this and use remix
