@@ -91,7 +91,7 @@ export default function Chat() {
 
 export function MessageLog(messageResponse: Message[], userPrefs: Cookie, status: number) {
     const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
-    const fetcher = useFetcher<FetcherData>();
+    const fetcher = useFetcher<FetcherData>({ key: "chat-fetcher" });
     let lastDate: Date | null = null;
     // state vars - potentially remove this and use remix
     const [isSpinning, setIsSpinning] = useState(false);

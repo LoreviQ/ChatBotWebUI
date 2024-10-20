@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { prefs } from "./../utils/cookies";
-import { useLoaderData, useFetcher, useSubmit, useOutlet } from "@remix-run/react";
+import { useLoaderData, useFetcher, useSubmit, useOutlet, useRevalidator } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
 import type { Event } from "./$character.events";
 import { EventLog } from "./$character.events";
@@ -9,6 +9,7 @@ import type { Message } from "./$character.chat.$thread";
 import { MessageLog } from "./$character.chat.$thread";
 import type { Cookie } from "./../utils/cookies";
 import { api, endpoints } from "../utils/api";
+import { useEffect } from "react";
 
 export const meta: MetaFunction = () => {
     return [{ title: "Ophelia" }, { name: "description", content: "All about Ophelia" }];
@@ -63,6 +64,13 @@ export default function Header() {
     const userPrefs = loaderData.userPrefs as Cookie;
     const submit = useSubmit();
     const outlet = useOutlet();
+
+    // Revalidate the messages every second
+    let { revalidate } = useRevalidator();
+    useEffect(() => {
+        let id = setInterval(revalidate, 1000);
+        return () => clearInterval(id);
+    }, [revalidate]);
 
     return (
         <div>
