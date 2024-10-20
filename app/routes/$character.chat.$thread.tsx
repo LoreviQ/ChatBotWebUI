@@ -126,7 +126,6 @@ export default function Chat() {
             <div className="overflow-auto flex flex-grow flex-col-reverse custom-scrollbar">
                 {messages.length > 0 ? (
                     messages.map((message, index) => {
-                        message.timestamp;
                         const scheduledMessage = message.timestamp > new Date();
                         if (scheduledMessage && !loaderData.userPrefs.debug) {
                             return null;
