@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import { prefs } from "./../utils/cookies";
+import { useMessageFetcher } from "./../utils/fetchers";
 
 import { api, endpoints } from "../utils/api";
 import type { Cookie } from "./../utils/cookies";
@@ -21,18 +22,6 @@ export type Message = {
 type FetcherData = {
     ok: boolean;
     [key: string]: any;
-};
-
-const postMessage = async (thread_id: string, content: string) => {
-    if (!content) {
-        return json({ type: "error", status: 400 });
-    }
-    const payload = {
-        role: "user",
-        content: content,
-    };
-    const response = await api.post(endpoints.threadMessages(thread_id), payload);
-    return json({ type: "post_message", status: response.status });
 };
 
 export const meta: MetaFunction = () => {
@@ -61,7 +50,12 @@ export async function action({ params, request }: ActionFunctionArgs) {
         switch (request.method) {
             case "POST":
                 const content = formData.get("chat") as string;
-                return postMessage(params.thread!, content);
+                if (!content) {
+                    return json({ type: "error", status: 400 });
+                }
+                const payload = { role: "user", content: content };
+                response = await api.post(endpoints.threadMessages(params.thread!), payload);
+                return json({ type: "post_message", status: response.status });
             case "DELETE":
                 const message_id = formData.get("message_id") as string;
                 response = await api.delete(endpoints.message(message_id));
@@ -91,7 +85,7 @@ export default function Chat() {
 
 export function MessageLog(messageResponse: Message[], userPrefs: Cookie, status: number) {
     const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
-    const fetcher = useFetcher<FetcherData>({ key: "chat-fetcher" });
+    const fetcher = useFetcher<FetcherData>();
     let lastDate: Date | null = null;
     // state vars - potentially remove this and use remix
     const [isSpinning, setIsSpinning] = useState(false);
