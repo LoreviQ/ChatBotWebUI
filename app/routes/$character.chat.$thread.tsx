@@ -7,10 +7,19 @@ import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import { prefs } from "./../utils/cookies";
-import { useMessageFetcher } from "./../utils/fetchers";
-
+import type { Params } from "@remix-run/react";
 import { api, endpoints } from "../utils/api";
 import type { Cookie } from "./../utils/cookies";
+
+type MessageResponse = {
+    data: Message[];
+    status: number;
+};
+
+type FetcherData = {
+    type: string;
+    status: number;
+};
 
 export type Message = {
     id: number;
@@ -19,10 +28,7 @@ export type Message = {
     content: string;
 };
 
-type FetcherData = {
-    ok: boolean;
-    [key: string]: any;
-};
+type FetcherType = ReturnType<typeof useFetcher<typeof action>>;
 
 export const meta: MetaFunction = () => {
     return [{ title: "Ophelia" }, { name: "description", content: "Chat with Ophelia" }];
@@ -40,7 +46,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};
-    return json({ messages: responseData, userPrefs: { debug: cookie.debug }, status: status });
+    return json({
+        messages: { data: responseData, status: status },
+        userPrefs: { debug: cookie.debug },
+        params: params,
+    });
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -80,19 +90,19 @@ export default function Chat() {
         return () => clearInterval(id);
     }, [revalidate]);
 
-    return MessageLog(loaderData.messages, userPrefs, loaderData.status);
+    return MessageLog(loaderData.messages, userPrefs, loaderData.params);
 }
 
-export function MessageLog(messageResponse: Message[], userPrefs: Cookie, status: number) {
+export function MessageLog(messageResponse: MessageResponse, userPrefs: Cookie, params: Params) {
     const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
-    const fetcher = useFetcher<FetcherData>();
+    const fetcher = useMessageFetcher(params.character!, params.thread!);
     let lastDate: Date | null = null;
     // state vars - potentially remove this and use remix
     const [isSpinning, setIsSpinning] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
     const [textareaValue, setTextareaValue] = useState("");
     // process message data
-    let messages = messageResponse.map((message) => {
+    let messages = messageResponse.data.map((message) => {
         return {
             ...message,
             timestamp: parseISO(message.timestamp + "Z"),
@@ -116,7 +126,8 @@ export function MessageLog(messageResponse: Message[], userPrefs: Cookie, status
 
     // Clear the textarea when a message is sent
     useEffect(() => {
-        if (fetcher.data?.type === "post_message") {
+        const data = fetcher.data as FetcherData | undefined;
+        if (data?.type === "post_message") {
             setTextareaValue("");
         }
     }, [fetcher.data]);
@@ -174,7 +185,9 @@ export function MessageLog(messageResponse: Message[], userPrefs: Cookie, status
                     })
                 ) : (
                     <div className="text-center text-text-muted-dark my-4">
-                        {status === 500 ? "Error getting messages from server" : "Send a message to Ophelia!"}
+                        {messageResponse.status === 500
+                            ? "Error getting messages from server"
+                            : "Send a message to Ophelia!"}
                     </div>
                 )}
             </div>
@@ -234,4 +247,10 @@ export function MessageLog(messageResponse: Message[], userPrefs: Cookie, status
             </fetcher.Form>
         </div>
     );
+}
+
+export function useMessageFetcher(character: string, thread: string) {
+    const fetcher = useFetcher<FetcherType>();
+    fetcher.formAction = `/${character}/chat/${thread}`;
+    return fetcher;
 }

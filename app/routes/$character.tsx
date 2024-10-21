@@ -39,6 +39,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         events: { data: eventData, status: eventStatus },
         messages: { data: messageData, status: messageStatus },
         userPrefs: { debug: cookie.debug },
+        params: params,
     });
 }
 
@@ -119,9 +120,7 @@ export default function Header() {
                     <div className="w-1/3">
                         {EventLog(loaderData.events.data, userPrefs, loaderData.events.status, true)}
                     </div>
-                    <div className="w-1/3">
-                        {MessageLog(loaderData.messages.data, userPrefs, loaderData.messages.status)}
-                    </div>
+                    <div className="w-1/3">{MessageLog(loaderData.messages, userPrefs, loaderData.params)}</div>
                     <div className="w-1/3"></div>
                 </div>
             )}

@@ -12,6 +12,7 @@ import { api, endpoints } from "../utils/api";
 export type Event = {
     id: number;
     timestamp: string;
+    type: string;
     content: string;
 };
 
@@ -90,7 +91,7 @@ export function EventLog(eventResponse: Event[], userPrefs: Cookie, status: numb
                                 <div className="w-full items-center rounded-lg my-2 py-1 hover:bg-hover-dark flex justify-between">
                                     <div className="flex flex-col w-full">
                                         <p className="px-4 text-xs text-text-muted-dark">
-                                            {format(event.timestamp, "hh:mm a")}
+                                            {`${event.type} - ${format(event.timestamp, "hh:mm a")}`}
                                         </p>
                                         <p className="py-1 px-4 break-words text-text-muted-dark">{event.content}</p>
                                     </div>
