@@ -120,7 +120,7 @@ export default function Header() {
                     <div className="w-1/3">
                         {EventLog(loaderData.events.data, userPrefs, loaderData.events.status, true)}
                     </div>
-                    <div className="w-1/3">{fullChatInterface(loaderData.messages, userPrefs, loaderData.params)}</div>
+                    <div className="w-1/3">{fullChatInterface(loaderData.messages, userPrefs, "ophelia", "1")}</div>
                     <div className="w-1/3"></div>
                 </div>
             )}

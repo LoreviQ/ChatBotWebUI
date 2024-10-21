@@ -57,6 +57,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
+    console.log("ACTION");
     const formData = await request.formData();
     let response: Response;
     try {
@@ -94,13 +95,19 @@ export default function Chat() {
         return () => clearInterval(id);
     }, [revalidate]);
 
-    return fullChatInterface(loaderData.messages, userPrefs, loaderData.params);
+    return fullChatInterface(loaderData.messages, userPrefs, loaderData.params.character!, loaderData.params.thread!);
 }
 
 // This function is used to render the full chat interface
-export function fullChatInterface(messageResponse: MessageResponse, userPrefs: Cookie, params: Params) {
-    const fetcher = useChatFetcher(params.character!, params.thread!);
+export function fullChatInterface(
+    messageResponse: MessageResponse,
+    userPrefs: Cookie,
+    character: string,
+    thread: string
+) {
+    const fetcher = useChatFetcher(character, thread);
     let lastDate: Date | null = null;
+    console.log(fetcher.formAction);
 
     // process message data
     let messages = messageResponse.data.map((message) => {
@@ -168,7 +175,7 @@ function messageBox(
                         <b className="px-4" style={{ fontSize: "1.25em" }}>
                             {message.role === "user" ? "Oliver" : "Ophelia"}
                         </b>
-                        <fetcher.Form method="DELETE">
+                        <fetcher.Form method="DELETE" action={fetcher.formAction}>
                             <input type="hidden" name="message_id" value={message.id} />
                             <button type="submit" className="px-4 text-primary-dark">
                                 <FontAwesomeIcon icon={faTrash} />
@@ -218,7 +225,7 @@ function isTypingMessage(messages: ProcessedMessage[]) {
 function getResponseImmediately(fetcher: any) {
     const [isSpinning, setIsSpinning] = useState(false);
     return (
-        <fetcher.Form method="PATCH" className="py-4 ps-4">
+        <fetcher.Form method="PATCH" className="py-4 ps-4" action={fetcher.formAction}>
             <button type="submit" className="pe-2 fa-lg text-primary-dark">
                 <FontAwesomeIcon className={isSpinning ? "fa-spin" : ""} icon={faArrowsRotate} />
             </button>
@@ -241,8 +248,9 @@ function userInputMessageBox(fetcher: any) {
             setTextareaValue("");
         }
     }, [fetcher.data]);
+
     return (
-        <fetcher.Form method="POST">
+        <fetcher.Form method="POST" action={fetcher.formAction}>
             <div className="flex items-center py-2 rounded-lg">
                 <textarea
                     name="chat"
