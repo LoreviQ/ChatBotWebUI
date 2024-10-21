@@ -1,13 +1,14 @@
-import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
+import type { MetaFunction, LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
+import type { Params } from "@remix-run/react";
 import { useLoaderData, useFetcher, useRevalidator } from "@remix-run/react";
-import type { MetaFunction } from "@remix-run/node";
-import { format, parseISO, isSameDay, isToday, addDays, addSeconds } from "date-fns";
 import { useEffect, useState } from "react";
+
+import { format, parseISO, isSameDay, isToday, addDays, addSeconds } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
+
 import { prefs } from "./../utils/cookies";
-import type { Params } from "@remix-run/react";
 import { api, endpoints } from "../utils/api";
 import type { Cookie } from "./../utils/cookies";
 
@@ -16,14 +17,16 @@ type MessageResponse = {
     status: number;
 };
 
-type FetcherData = {
-    type: string;
-    status: number;
-};
-
 export type Message = {
     id: number;
     timestamp: string;
+    role: string;
+    content: string;
+};
+
+type ProcessedMessage = {
+    id: number;
+    timestamp: Date;
     role: string;
     content: string;
 };
@@ -79,6 +82,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     }
 }
 
+// Entry point for this endpoint
 export default function Chat() {
     const loaderData = useLoaderData<typeof loader>();
     let { revalidate } = useRevalidator();
@@ -90,17 +94,14 @@ export default function Chat() {
         return () => clearInterval(id);
     }, [revalidate]);
 
-    return MessageLog(loaderData.messages, userPrefs, loaderData.params);
+    return fullChatInterface(loaderData.messages, userPrefs, loaderData.params);
 }
 
-export function MessageLog(messageResponse: MessageResponse, userPrefs: Cookie, params: Params) {
-    const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
-    const fetcher = useMessageFetcher(params.character!, params.thread!);
+// This function is used to render the full chat interface
+export function fullChatInterface(messageResponse: MessageResponse, userPrefs: Cookie, params: Params) {
+    const fetcher = useChatFetcher(params.character!, params.thread!);
     let lastDate: Date | null = null;
-    // state vars - potentially remove this and use remix
-    const [isSpinning, setIsSpinning] = useState(false);
-    const [isTyping, setIsTyping] = useState(false);
-    const [textareaValue, setTextareaValue] = useState("");
+
     // process message data
     let messages = messageResponse.data.map((message) => {
         return {
@@ -116,72 +117,12 @@ export function MessageLog(messageResponse: MessageResponse, userPrefs: Cookie, 
         return b.id - a.id;
     });
 
-    useEffect(() => {
-        const now = new Date();
-        const isAnyMessageTyping = messages.some(
-            (message) => message.timestamp > now && message.timestamp < addSeconds(now, 30)
-        );
-        setIsTyping(isAnyMessageTyping);
-    }, [messages]);
-
-    // Clear the textarea when a message is sent
-    useEffect(() => {
-        const data = fetcher.data as FetcherData | undefined;
-        if (data?.type === "post_message") {
-            setTextareaValue("");
-        }
-    }, [fetcher.data]);
     return (
         <div className="flex flex-col h-screen">
             <div className="overflow-auto flex flex-grow flex-col-reverse custom-scrollbar">
                 {messages.length > 0 ? (
                     messages.map((message, index) => {
-                        const scheduledMessage = message.timestamp > new Date();
-                        if (scheduledMessage && !userPrefs.debug) {
-                            return null;
-                        }
-                        const showDateHeader = !lastDate || !isSameDay(lastDate, message.timestamp);
-                        lastDate = message.timestamp;
-                        const isLastMessage = index === messages.length - 1;
-                        return (
-                            <div key={index}>
-                                {isLastMessage ? (
-                                    <div className="text-center text-text-muted-dark my-4">
-                                        {format(message.timestamp, "MMMM do, yyyy")}
-                                    </div>
-                                ) : null}
-                                <div className="w-full items-center rounded-lg my-2 py-1 hover:bg-hover-dark flex justify-between">
-                                    <div className="flex flex-col w-full">
-                                        <div className="flex justify-between">
-                                            <b className="px-4" style={{ fontSize: "1.25em" }}>
-                                                {message.role === "user" ? "Oliver" : "Ophelia"}
-                                            </b>
-                                            <fetcher.Form method="DELETE">
-                                                <input type="hidden" name="message_id" value={message.id} />
-                                                <button type="submit" className="px-4 text-primary-dark">
-                                                    <FontAwesomeIcon icon={faTrash} />
-                                                </button>
-                                            </fetcher.Form>
-                                        </div>
-                                        <p className="py-1 px-4 break-words">{message.content}</p>
-                                        <div className="flex justify-end">
-                                            <small
-                                                className={`px-4 self-end ${
-                                                    scheduledMessage ? "text-yellow-500" : "text-text-muted-dark"
-                                                }`}
-                                            >
-                                                {format(message.timestamp, "hh:mm a")}
-                                            </small>
-                                        </div>
-                                    </div>
-                                </div>
-                                {showDateHeader && !isToday(message.timestamp) && (
-                                    <div className="text-center text-text-muted-dark my-4">
-                                        {format(addDays(message.timestamp, 1), "MMMM do, yyyy")}
-                                    </div>
-                                )}
-                            </div>
-                        );
+                        return messageBox(message, index, messages.length, userPrefs, lastDate, fetcher);
                     })
                 ) : (
                     <div className="text-center text-text-muted-dark my-4">
@@ -191,66 +132,165 @@ export function MessageLog(messageResponse: MessageResponse, userPrefs: Cookie, 
                     </div>
                 )}
             </div>
-            {isTyping && (
-                <div className="flex items-center ps-8">
-                    <div className="loader me-6"></div>
-                    <small className="text-text-muted-dark">Ophelia is typing...</small>
-                </div>
-            )}
-            <fetcher.Form method="PATCH" className="py-4 ps-4">
-                <button type="submit" className="pe-2 fa-lg text-primary-dark">
-                    <FontAwesomeIcon className={isSpinning ? "fa-spin" : ""} icon={faArrowsRotate} />
-                </button>
-                <small className="text-text-muted-dark self-end">Get a response from Ophelia immediately</small>
-            </fetcher.Form>
-            <fetcher.Form method="POST">
-                <div className="flex items-center py-2 rounded-lg">
-                    <textarea
-                        name="chat"
-                        rows={4}
-                        className="block p-2.5 w-full text-sm rounded-lg border text-gray-900 bg-white border-primary-dark dark:bg-bg-dark dark:placeholder-text-muted-dark dark:text-text-dark"
-                        placeholder={placeholder_message}
-                        value={textareaValue}
-                        onChange={(e) => setTextareaValue(e.target.value)}
-                        onKeyDown={(e) => {
-                            const target = e.target as HTMLTextAreaElement;
-                            if (e.key === "Enter" && !e.altKey) {
-                                e.preventDefault();
-                                target.form?.requestSubmit();
-                            } else if (e.key === "Enter" && e.altKey) {
-                                e.preventDefault();
-                                const start = target.selectionStart;
-                                const end = target.selectionEnd;
-                                target.value = target.value.substring(0, start) + "\n" + target.value.substring(end);
-                                target.selectionStart = target.selectionEnd = start + 1;
-                            }
-                        }}
-                    />
-                    <div className="flex flex-col items-center">
-                        <button
-                            type="submit"
-                            className="inline-flex justify-center ps-4 p-2 text-primary-dark rounded-full cursor-pointer"
-                        >
-                            <svg
-                                className="w-5 h-5 rotate-90 rtl:-rotate-90"
-                                aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="currentColor"
-                                viewBox="0 0 18 20"
-                            >
-                                <path d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
-                            </svg>
-                            <span className="sr-only">Send message</span>
-                        </button>
-                    </div>
-                </div>
-            </fetcher.Form>
+            {isTypingMessage(messages)}
+            {getResponseImmediately(fetcher)}
+            {userInputMessageBox(fetcher)}
         </div>
     );
 }
 
-export function useMessageFetcher(character: string, thread: string) {
-    const fetcher = useFetcher<FetcherType>();
+// Renders a single message in the chat interface
+function messageBox(
+    message: ProcessedMessage,
+    index: number,
+    messagesLen: number,
+    userPrefs: Cookie,
+    lastDate: Date | null,
+    fetcher: any
+) {
+    const scheduledMessage = message.timestamp > new Date();
+    if (scheduledMessage && !userPrefs.debug) {
+        return null;
+    }
+    const showDateHeader = !lastDate || !isSameDay(lastDate, message.timestamp);
+    lastDate = message.timestamp;
+    const isLastMessage = index === messagesLen - 1;
+    return (
+        <div key={index}>
+            {isLastMessage ? (
+                <div className="text-center text-text-muted-dark my-4">
+                    {format(message.timestamp, "MMMM do, yyyy")}
+                </div>
+            ) : null}
+            <div className="w-full items-center rounded-lg my-2 py-1 hover:bg-hover-dark flex justify-between">
+                <div className="flex flex-col w-full">
+                    <div className="flex justify-between">
+                        <b className="px-4" style={{ fontSize: "1.25em" }}>
+                            {message.role === "user" ? "Oliver" : "Ophelia"}
+                        </b>
+                        <fetcher.Form method="DELETE">
+                            <input type="hidden" name="message_id" value={message.id} />
+                            <button type="submit" className="px-4 text-primary-dark">
+                                <FontAwesomeIcon icon={faTrash} />
+                            </button>
+                        </fetcher.Form>
+                    </div>
+                    <p className="py-1 px-4 break-words">{message.content}</p>
+                    <div className="flex justify-end">
+                        <small
+                            className={`px-4 self-end ${scheduledMessage ? "text-yellow-500" : "text-text-muted-dark"}`}
+                        >
+                            {format(message.timestamp, "hh:mm a")}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {showDateHeader && !isToday(message.timestamp) && (
+                <div className="text-center text-text-muted-dark my-4">
+                    {format(addDays(message.timestamp, 1), "MMMM do, yyyy")}
+                </div>
+            )}
+        </div>
+    );
+}
+
+// Renders the "Ophelia is typing..." message
+function isTypingMessage(messages: ProcessedMessage[]) {
+    const [isTyping, setIsTyping] = useState(false);
+    useEffect(() => {
+        const now = new Date();
+        const isAnyMessageTyping = messages.some(
+            (message) => message.timestamp > now && message.timestamp < addSeconds(now, 30)
+        );
+        setIsTyping(isAnyMessageTyping);
+    }, [messages]);
+    if (isTyping) {
+        return (
+            <div className="flex items-center ps-8">
+                <div className="loader me-6"></div>
+                <small className="text-text-muted-dark">Ophelia is typing...</small>
+            </div>
+        );
+    }
+}
+
+// Renders the "Get a response from Ophelia immediately" button
+function getResponseImmediately(fetcher: any) {
+    const [isSpinning, setIsSpinning] = useState(false);
+    return (
+        <fetcher.Form method="PATCH" className="py-4 ps-4">
+            <button type="submit" className="pe-2 fa-lg text-primary-dark">
+                <FontAwesomeIcon className={isSpinning ? "fa-spin" : ""} icon={faArrowsRotate} />
+            </button>
+            <small className="text-text-muted-dark self-end">Get a response from Ophelia immediately</small>
+        </fetcher.Form>
+    );
+}
+
+// Renders the user input message box
+function userInputMessageBox(fetcher: any) {
+    const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
+    const [textareaValue, setTextareaValue] = useState("");
+
+    // Clear the textarea when a message is sent
+    function hasTypeProperty(data: any): data is { type: string } {
+        return data && typeof data.type === "string";
+    }
+    useEffect(() => {
+        if (hasTypeProperty(fetcher.data) && fetcher.data.type === "post_message") {
+            setTextareaValue("");
+        }
+    }, [fetcher.data]);
+    return (
+        <fetcher.Form method="POST">
+            <div className="flex items-center py-2 rounded-lg">
+                <textarea
+                    name="chat"
+                    rows={4}
+                    className="block p-2.5 w-full text-sm rounded-lg border text-gray-900 bg-white border-primary-dark dark:bg-bg-dark dark:placeholder-text-muted-dark dark:text-text-dark"
+                    placeholder={placeholder_message}
+                    value={textareaValue}
+                    onChange={(e) => setTextareaValue(e.target.value)}
+                    onKeyDown={(e) => {
+                        const target = e.target as HTMLTextAreaElement;
+                        if (e.key === "Enter" && !e.altKey) {
+                            e.preventDefault();
+                            target.form?.requestSubmit();
+                        } else if (e.key === "Enter" && e.altKey) {
+                            e.preventDefault();
+                            const start = target.selectionStart;
+                            const end = target.selectionEnd;
+                            target.value = target.value.substring(0, start) + "\n" + target.value.substring(end);
+                            target.selectionStart = target.selectionEnd = start + 1;
+                        }
+                    }}
+                />
+                <div className="flex flex-col items-center">
+                    <button
+                        type="submit"
+                        className="inline-flex justify-center ps-4 p-2 text-primary-dark rounded-full cursor-pointer"
+                    >
+                        <svg
+                            className="w-5 h-5 rotate-90 rtl:-rotate-90"
+                            aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="currentColor"
+                            viewBox="0 0 18 20"
+                        >
+                            <path d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
+                        </svg>
+                        <span className="sr-only">Send message</span>
+                    </button>
+                </div>
+            </div>
+        </fetcher.Form>
+    );
+}
+
+export function useChatFetcher(character: string, thread: string) {
+    const fetcher = useFetcher<FetcherType>({
+        key: `chat-${character}-${thread}`,
+    });
     fetcher.formAction = `/${character}/chat/${thread}`;
     return fetcher;
 }

@@ -6,7 +6,7 @@ import type { MetaFunction } from "@remix-run/node";
 import type { Event } from "./$character.events";
 import { EventLog } from "./$character.events";
 import type { Message } from "./$character.chat.$thread";
-import { MessageLog } from "./$character.chat.$thread";
+import { fullChatInterface } from "./$character.chat.$thread";
 import type { Cookie } from "./../utils/cookies";
 import { api, endpoints } from "../utils/api";
 import { useEffect } from "react";
@@ -120,7 +120,7 @@ export default function Header() {
                     <div className="w-1/3">
                         {EventLog(loaderData.events.data, userPrefs, loaderData.events.status, true)}
                     </div>
-                    <div className="w-1/3">{MessageLog(loaderData.messages, userPrefs, loaderData.params)}</div>
+                    <div className="w-1/3">{fullChatInterface(loaderData.messages, userPrefs, loaderData.params)}</div>
                     <div className="w-1/3"></div>
                 </div>
             )}
