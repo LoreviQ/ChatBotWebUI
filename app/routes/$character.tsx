@@ -72,11 +72,9 @@ export async function action({ request }: ActionFunctionArgs) {
     });
 }
 
-export default function Header() {
-    const fetcher = useFetcher();
+export default function Character() {
     const loaderData = useLoaderData<typeof loader>();
     const userPrefs = loaderData.userPrefs as Cookie;
-    const submit = useSubmit();
     const outlet = useOutlet();
 
     // Revalidate the messages every second
@@ -86,6 +84,25 @@ export default function Header() {
         return () => clearInterval(id);
     }, [revalidate]);
 
+    return (
+        <div>
+            {Header(userPrefs)}
+            {outlet ? (
+                <div className="container mx-auto max-w-2xl">{outlet}</div>
+            ) : (
+                <div className="flex">
+                    <div className="w-1/3">{EventLog(loaderData.events, userPrefs, true)}</div>
+                    <div className="w-1/3">{fullChatInterface(loaderData.messages, userPrefs, "ophelia", "1")}</div>
+                    <div className="w-1/3">{PostLog(loaderData.posts, userPrefs, true)}</div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+function Header(userPrefs: Cookie) {
+    const fetcher = useFetcher();
+    const submit = useSubmit();
     return (
         <div>
             <div
@@ -107,7 +124,7 @@ export default function Header() {
                             type="checkbox"
                             value={1}
                             className="sr-only peer"
-                            defaultChecked={loaderData.userPrefs.debug}
+                            defaultChecked={userPrefs.debug}
                         />
                         <div
                             className="
@@ -126,15 +143,6 @@ export default function Header() {
             <p className="absolute mt-4 left-1/2 transform -translate-x-1/2 text-5xl font-ophelia font-outline">
                 Ophelia
             </p>
-            {outlet ? (
-                <div className="container mx-auto max-w-2xl">{outlet}</div>
-            ) : (
-                <div className="flex">
-                    <div className="w-1/3">{EventLog(loaderData.events, userPrefs, true)}</div>
-                    <div className="w-1/3">{fullChatInterface(loaderData.messages, userPrefs, "ophelia", "1")}</div>
-                    <div className="w-1/3">{PostLog(loaderData.posts, userPrefs, true)}</div>
-                </div>
-            )}
         </div>
     );
 }
