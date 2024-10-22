@@ -5,6 +5,8 @@ import { useLoaderData, useFetcher, useSubmit, useOutlet, useRevalidator } from 
 import type { MetaFunction } from "@remix-run/node";
 import type { Event } from "./$character.events";
 import { EventLog } from "./$character.events";
+import type { Post } from "./$character.posts";
+import { PostLog } from "./$character.posts";
 import type { Message } from "./$character.chat.$thread";
 import { fullChatInterface } from "./$character.chat.$thread";
 import type { Cookie } from "./../utils/cookies";
@@ -16,7 +18,7 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-    let eventData: Event[], eventStatus: number, messageData: Message[], messageStatus: number;
+    let eventData: Event[], eventStatus: number;
     try {
         const response = await api.get(endpoints.characterEvents(params.character!));
         eventData = await response.data;
@@ -25,6 +27,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         eventData = [];
         eventStatus = 500;
     }
+    let messageData: Message[], messageStatus: number;
     try {
         const response = await api.get(endpoints.threadMessages("1"));
         messageData = await response.data;
@@ -33,11 +36,21 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         messageData = [];
         messageStatus = 500;
     }
+    let postData: Post[], postStatus: number;
+    try {
+        const response = await api.get(endpoints.characterPosts(params.character!));
+        postData = await response.data;
+        postStatus = response.status;
+    } catch (error) {
+        postData = [];
+        postStatus = 500;
+    }
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};
     return json({
         events: { data: eventData, status: eventStatus },
         messages: { data: messageData, status: messageStatus },
+        posts: { data: postData, status: postStatus },
         userPrefs: { debug: cookie.debug },
         params: params,
     });
@@ -119,7 +132,7 @@ export default function Header() {
                 <div className="flex">
                     <div className="w-1/3">{EventLog(loaderData.events, userPrefs, true)}</div>
                     <div className="w-1/3">{fullChatInterface(loaderData.messages, userPrefs, "ophelia", "1")}</div>
-                    <div className="w-1/3"></div>
+                    <div className="w-1/3">{PostLog(loaderData.posts, userPrefs, true)}</div>
                 </div>
             )}
         </div>

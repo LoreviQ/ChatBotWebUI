@@ -4,7 +4,6 @@ import { useLoaderData, useRevalidator } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
 import { parseISO, formatDistanceToNow } from "date-fns";
 import { useEffect } from "react";
-import DOMPurify from "dompurify";
 
 import type { Cookie } from "./../utils/cookies";
 import { prefs } from "./../utils/cookies";
@@ -120,12 +119,10 @@ export function PostLog(PostResponse: PostResponse, userPrefs: Cookie, component
                     </div>
                 )}
             </div>
-            <div></div>
         </div>
     );
 }
 
 function boldHashtags(text: string) {
-    const bolded = text.replace(/(#\w+)/g, "<strong>$1</strong>");
-    return DOMPurify.sanitize(bolded);
+    return text.replace(/(#\w+)/g, "<strong>$1</strong>");
 }
