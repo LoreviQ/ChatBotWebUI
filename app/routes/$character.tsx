@@ -117,9 +117,7 @@ export default function Header() {
                 <div className="container mx-auto max-w-2xl">{outlet}</div>
             ) : (
                 <div className="flex">
-                    <div className="w-1/3">
-                        {EventLog(loaderData.events.data, userPrefs, loaderData.events.status, true)}
-                    </div>
+                    <div className="w-1/3">{EventLog(loaderData.events, userPrefs, true)}</div>
                     <div className="w-1/3">{fullChatInterface(loaderData.messages, userPrefs, "ophelia", "1")}</div>
                     <div className="w-1/3"></div>
                 </div>

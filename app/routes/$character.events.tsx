@@ -9,6 +9,11 @@ import type { Cookie } from "./../utils/cookies";
 import { prefs } from "./../utils/cookies";
 import { api, endpoints } from "../utils/api";
 
+type EventResponse = {
+    data: Event[];
+    status: number;
+};
+
 export type Event = {
     id: number;
     timestamp: string;
@@ -32,7 +37,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};
-    return json({ events: responseData, userPrefs: { debug: cookie.debug }, status: status });
+    return json({ events: { data: responseData, status: status }, userPrefs: { debug: cookie.debug } });
 }
 
 export default function Events() {
@@ -46,13 +51,13 @@ export default function Events() {
         return () => clearInterval(id);
     }, [revalidate]);
 
-    return EventLog(loaderData.events, userPrefs, loaderData.status, false);
+    return EventLog(loaderData.events, userPrefs, false);
 }
 
-export function EventLog(eventResponse: Event[], userPrefs: Cookie, status: number, component: boolean) {
+export function EventLog(eventResponse: EventResponse, userPrefs: Cookie, component: boolean) {
     let lastDate: Date | null = null;
-    // process event data
-    let events = eventResponse.map((event) => {
+    // process events
+    let events = eventResponse.data.map((event) => {
         return {
             ...event,
             timestamp: parseISO(event.timestamp + "Z"),
@@ -106,7 +111,9 @@ export function EventLog(eventResponse: Event[], userPrefs: Cookie, status: numb
                     })
                 ) : (
                     <div className="text-center text-text-muted-dark my-4">
-                        {status === 500 ? "Error getting messages from server" : "Send a message to Ophelia!"}
+                        {eventResponse.status === 500
+                            ? "Error getting events from the server"
+                            : "Oops! Looks like there are no events to show"}
                     </div>
                 )}
             </div>

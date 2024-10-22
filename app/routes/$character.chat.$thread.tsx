@@ -57,7 +57,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
-    console.log("ACTION");
     const formData = await request.formData();
     let response: Response;
     try {
@@ -107,7 +106,6 @@ export function fullChatInterface(
 ) {
     const fetcher = useChatFetcher(character, thread);
     let lastDate: Date | null = null;
-    console.log(fetcher.formAction);
 
     // process message data
     let messages = messageResponse.data.map((message) => {
