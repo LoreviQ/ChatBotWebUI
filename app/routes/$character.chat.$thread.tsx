@@ -124,7 +124,7 @@ export function fullChatInterface(
 
     return (
         <div className="flex flex-col h-screen">
-            <div className="overflow-auto flex flex-grow flex-col-reverse custom-scrollbar">
+            <div className="overflow-auto flex flex-grow flex-col-reverse custom-scrollbar pt-20">
                 {messages.length > 0 ? (
                     messages.map((message, index) => {
                         return messageBox(message, index, messages.length, userPrefs, lastDate, fetcher);

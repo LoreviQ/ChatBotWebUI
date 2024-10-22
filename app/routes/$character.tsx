@@ -110,6 +110,7 @@ function Header(userPrefs: Cookie) {
                     absolute top-0 left-0 w-full h-20 flex items-center
                     backdrop-blur-sm backdrop-saturate-200 backdrop-contrast-150 bg-bg-dark/50 
                     border-double border-b-4 border-primary-dark
+                    z-40
                 "
             >
                 <fetcher.Form
@@ -140,7 +141,7 @@ function Header(userPrefs: Cookie) {
                     </label>
                 </fetcher.Form>
             </div>
-            <p className="absolute mt-4 left-1/2 transform -translate-x-1/2 text-5xl font-ophelia font-outline">
+            <p className="absolute z-50 mt-4 left-1/2 transform -translate-x-1/2 text-5xl font-ophelia font-outline">
                 Ophelia
             </p>
         </div>

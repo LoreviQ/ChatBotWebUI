@@ -74,7 +74,7 @@ export function PostLog(PostResponse: PostResponse, userPrefs: Cookie, component
     return (
         <div className="flex flex-col h-screen">
             <div
-                className={`overflow-auto flex flex-grow flex-col-reverse ${
+                className={`overflow-auto flex flex-grow flex-col-reverse pt-20 ${
                     component ? "hidden-scrollbar" : "custom-scrollbar"
                 }`}
             >

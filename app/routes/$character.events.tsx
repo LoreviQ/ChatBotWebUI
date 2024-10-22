@@ -73,7 +73,7 @@ export function EventLog(eventResponse: EventResponse, userPrefs: Cookie, compon
     return (
         <div className="flex flex-col h-screen">
             <div
-                className={`overflow-auto flex flex-grow flex-col-reverse ${
+                className={`overflow-auto flex flex-grow flex-col-reverse pt-20 ${
                     component ? "hidden-scrollbar" : "custom-scrollbar"
                 }`}
             >
