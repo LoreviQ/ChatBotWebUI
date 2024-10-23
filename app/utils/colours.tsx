@@ -1,7 +1,3 @@
-export const getColourVariable = (hex: string, type: string) => {
-    return `:root {--color-${type}: ${hex};}`;
-};
-
 // change hex to rgb
 export const getRGBColour = (hex: string, type: string) => {
     let colour = hex.replace(/#/g, "");

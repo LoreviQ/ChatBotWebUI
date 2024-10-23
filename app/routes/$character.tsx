@@ -11,13 +11,45 @@ import type { Message } from "./$character.chat.$thread";
 import { fullChatInterface } from "./$character.chat.$thread";
 import type { Cookie } from "./../utils/cookies";
 import { api, endpoints } from "../utils/api";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+
+export type Character = {
+    id: number;
+    name: string;
+    path_name: string;
+    description: string;
+    age: number;
+    height: string;
+    personality: string;
+    appearance: string;
+    loves: string;
+    hates: string;
+    details: string;
+    scenario: string;
+    important: string;
+    initial_message: string;
+    favorite_colour: string;
+    phases: boolean;
+    img_gen: boolean;
+    model: string;
+    global_positive: string;
+    global_negative: string;
+};
 
 export const meta: MetaFunction = () => {
     return [{ title: "Ophelia" }, { name: "description", content: "All about Ophelia" }];
 };
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
+    let characterData: Character, characterStatus: number;
+    try {
+        const response = await api.get(endpoints.characterByPath(params.character!));
+        characterData = await response.data;
+        characterStatus = response.status;
+    } catch (error) {
+        characterData = {} as Character;
+        characterStatus = 500;
+    }
     let eventData: Event[], eventStatus: number;
     try {
         const response = await api.get(endpoints.characterEvents(params.character!));
@@ -48,6 +80,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};
     return json({
+        character: { data: characterData, status: characterStatus },
         events: { data: eventData, status: eventStatus },
         messages: { data: messageData, status: messageStatus },
         posts: { data: postData, status: postStatus },
@@ -76,7 +109,17 @@ export default function Character() {
     const loaderData = useLoaderData<typeof loader>();
     const userPrefs = loaderData.userPrefs as Cookie;
     const outlet = useOutlet();
-
+    const [primaryColour, setPrimaryColour] = useState("#0000FF");
+    const [characterName, setCharacterName] = useState("");
+    useEffect(() => {
+        if (loaderData.character.data.favorite_colour) {
+            console.log(loaderData.character.data.favorite_colour);
+            setPrimaryColour(loaderData.character.data.favorite_colour);
+        }
+        if (loaderData.character.data.name) {
+            setCharacterName(loaderData.character.data.name);
+        }
+    }, [loaderData.character.data]);
     // Revalidate the messages every second
     let { revalidate } = useRevalidator();
     useEffect(() => {
@@ -85,8 +128,8 @@ export default function Character() {
     }, [revalidate]);
 
     return (
-        <div>
-            {Header(userPrefs)}
+        <div style={{ "--color-primary": primaryColour } as React.CSSProperties}>
+            {Header(characterName, userPrefs)}
             {outlet ? (
                 <div className="container mx-auto max-w-2xl">{outlet}</div>
             ) : (
@@ -100,7 +143,7 @@ export default function Character() {
     );
 }
 
-function Header(userPrefs: Cookie) {
+function Header(characterName: string, userPrefs: Cookie) {
     const fetcher = useFetcher();
     const submit = useSubmit();
     return (
@@ -109,7 +152,7 @@ function Header(userPrefs: Cookie) {
                 className="
                     absolute top-0 left-0 w-full h-20 flex items-center
                     backdrop-blur-sm backdrop-saturate-200 backdrop-contrast-150 bg-bg-dark/50 
-                    border-double border-b-4 border-primary-dark
+                    border-double border-b-4 border-character
                     z-40
                 "
             >
@@ -131,7 +174,7 @@ function Header(userPrefs: Cookie) {
                             className="
                                 relative w-11 h-6 rounded-full
                                 bg-hover-dark
-                                peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full  peer-checked:bg-primary-dark
+                                peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full  peer-checked:bg-character
                                 after:content-[''] after:absolute after:top-[2px] after:start-[2px] 
                                 after:border after:border-hover-dark peer-checked:after:border-white after:bg-white 
                                 after:rounded-full after:h-5 after:w-5 after:transition-all  
@@ -142,7 +185,7 @@ function Header(userPrefs: Cookie) {
                 </fetcher.Form>
             </div>
             <p className="absolute z-50 mt-4 left-1/2 transform -translate-x-1/2 text-5xl font-ophelia font-outline">
-                Ophelia
+                {characterName}
             </p>
         </div>
     );

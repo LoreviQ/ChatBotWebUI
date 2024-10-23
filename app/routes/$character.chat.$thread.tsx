@@ -1,6 +1,5 @@
 import type { MetaFunction, LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import type { Params } from "@remix-run/react";
 import { useLoaderData, useFetcher, useRevalidator } from "@remix-run/react";
 import { useEffect, useState } from "react";
 
@@ -11,7 +10,7 @@ import { faTrash, faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import { prefs } from "./../utils/cookies";
 import { api, endpoints } from "../utils/api";
 import type { Cookie } from "./../utils/cookies";
-import { c } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
+import type { Character } from "./$character";
 
 type MessageResponse = {
     data: Message[];
@@ -39,7 +38,7 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-    let characterData: Message[], characterStatus: number;
+    let characterData: Character[], characterStatus: number;
     try {
         const response = await api.get(endpoints.characterByPath(params.character!));
         characterData = await response.data;
@@ -236,7 +235,7 @@ function getResponseImmediately(fetcher: any) {
     const [isSpinning, setIsSpinning] = useState(false);
     return (
         <fetcher.Form method="PATCH" className="py-4 ps-4" action={fetcher.formAction}>
-            <button type="submit" className="pe-2 fa-lg text-primary-dark">
+            <button type="submit" className="pe-2 fa-lg text-character">
                 <FontAwesomeIcon className={isSpinning ? "fa-spin" : ""} icon={faArrowsRotate} />
             </button>
             <small className="text-text-muted-dark self-end">Get a response from Ophelia immediately</small>
@@ -265,7 +264,7 @@ function userInputMessageBox(fetcher: any) {
                 <textarea
                     name="chat"
                     rows={4}
-                    className="block p-2.5 w-full text-sm rounded-lg border text-gray-900 bg-white border-primary-dark dark:bg-bg-dark dark:placeholder-text-muted-dark dark:text-text-dark"
+                    className="block p-2.5 w-full text-sm rounded-lg border text-gray-900 bg-white border-character dark:bg-bg-dark dark:placeholder-text-muted-dark dark:text-text-dark"
                     placeholder={placeholder_message}
                     value={textareaValue}
                     onChange={(e) => setTextareaValue(e.target.value)}
@@ -286,7 +285,7 @@ function userInputMessageBox(fetcher: any) {
                 <div className="flex flex-col items-center">
                     <button
                         type="submit"
-                        className="inline-flex justify-center ps-4 p-2 text-primary-dark rounded-full cursor-pointer"
+                        className="inline-flex justify-center ps-4 p-2 text-character rounded-full cursor-pointer"
                     >
                         <svg
                             className="w-5 h-5 rotate-90 rtl:-rotate-90"
