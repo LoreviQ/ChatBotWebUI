@@ -107,7 +107,7 @@ export function PostLog(PostResponse: PostResponse, userPrefs: Cookie, component
                                     className="py-2 px-6"
                                     dangerouslySetInnerHTML={{ __html: boldHashtags(post.caption) }}
                                 />
-                                {index != 0 && <hr />}
+                                {index != 0 && <hr className="mx-4 my-4 border-text-muted-dark" />}
                             </div>
                         );
                     })
