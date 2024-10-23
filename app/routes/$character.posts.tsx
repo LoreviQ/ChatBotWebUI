@@ -13,7 +13,8 @@ import { characterErrMessage } from "../utils/errors";
 
 export type Post = {
     id: number;
-    timestamp: string;
+    timestamp: string | Date;
+    image_post: boolean;
     description: string;
     prompt: string;
     caption: string;
@@ -101,7 +102,7 @@ export function PostLog(
     return (
         <div className="flex flex-col h-screen">
             <div
-                className={`overflow-auto flex flex-grow flex-col-reverse pt-20 ${
+                className={`overflow-auto flex flex-grow flex-col-reverse pt-20  ${
                     component ? "hidden-scrollbar" : "custom-scrollbar"
                 }`}
             >
@@ -110,39 +111,75 @@ export function PostLog(
                     if (scheduledPost && !userPrefs.debug) {
                         return null;
                     }
-                    return (
-                        <div key={index}>
-                            <div className="flex pb-4  w-full">
-                                <img
-                                    className="rounded-full w-20 me-8"
-                                    src={endpoints.imageURL(character.profile_path)}
-                                    alt={post.caption}
-                                />
-                                <div className="flex flex-col justify-center">
-                                    <p>{character.name}</p>
-                                    <p className="text-text-muted-dark">
-                                        {formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="relative">
-                                <img
-                                    className="rounded-lg"
-                                    src={endpoints.imageURL(post.image_path)}
-                                    alt={post.caption}
-                                />
-                                <div className="absolute bottom-0 left-0 w-full h-6 flex ">👍❤️😍🎉</div>
-                            </div>
-                            <p className="pt-2 px-6" dangerouslySetInnerHTML={{ __html: boldHashtags(post.caption) }} />
-                            {index != 0 && <hr className="mx-4 my-6 border-text-muted-dark" />}
-                        </div>
-                    );
+                    if (post.image_post) {
+                        if (post.image_path) {
+                            return <ImagePost post={post} character={character} index={index} />;
+                        }
+                        return null;
+                    }
+                    return <TextPost post={post} character={character} index={index} />;
                 })}
             </div>
         </div>
     );
 }
 
-function boldHashtags(text: string) {
-    return text.replace(/(#\w+)/g, "<strong>$1</strong>");
+interface postParams {
+    post: Post;
+    character: Character;
+    index: number;
+}
+
+function ImagePost({ post, character, index }: postParams) {
+    return (
+        <div key={index} className="px-4">
+            <div className="flex pb-4  w-full">
+                <img
+                    className="rounded-full w-20 me-8"
+                    src={endpoints.imageURL(character.profile_path)}
+                    alt={post.caption}
+                />
+                <div className="flex flex-col justify-center">
+                    <p>{character.name}</p>
+                    <p className="text-text-muted-dark">
+                        {formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}
+                    </p>
+                </div>
+            </div>
+            <div className="relative">
+                <img className="rounded-lg" src={endpoints.imageURL(post.image_path)} alt={post.caption} />
+                <div className="absolute bottom-0 left-0 w-full h-6 flex ">👍❤️😍🎉</div>
+            </div>
+            <p className="pt-2 px-6" dangerouslySetInnerHTML={{ __html: formatPost(post.caption) }} />
+            {index != 0 && <hr className="mx-4 my-6 border-text-muted-dark" />}
+        </div>
+    );
+}
+
+function TextPost({ post, character, index }: postParams) {
+    return (
+        <div key={index} className="px-4">
+            <div className="flex pb-4  w-full">
+                <img
+                    className="rounded-full w-20 me-8"
+                    src={endpoints.imageURL(character.profile_path)}
+                    alt={post.caption}
+                />
+                <div className="flex flex-col justify-center">
+                    <p>{character.name}</p>
+                    <p className="text-text-muted-dark">
+                        {formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}
+                    </p>
+                </div>
+            </div>
+            <p className="pt-2 px-6" dangerouslySetInnerHTML={{ __html: formatPost(post.description) }} />
+            {index != 0 && <hr className="mx-4 my-6 border-text-muted-dark" />}
+        </div>
+    );
+}
+
+function formatPost(text: string) {
+    text = text.replace(/(#\w+)/g, "<strong>$1</strong>");
+    text = text.replace(/^"|"$/g, "");
+    return text;
 }
