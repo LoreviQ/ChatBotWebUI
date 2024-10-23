@@ -12,11 +12,6 @@ import { api, endpoints } from "../utils/api";
 import type { Cookie } from "./../utils/cookies";
 import type { Character } from "./$character";
 
-type MessageResponse = {
-    data: Message[];
-    status: number;
-};
-
 export type Message = {
     id: number;
     timestamp: string;
@@ -104,27 +99,34 @@ export default function Chat() {
         return () => clearInterval(id);
     }, [revalidate]);
 
-    return fullChatInterface(loaderData.messages, userPrefs, loaderData.params.character!, loaderData.params.thread!);
+    return fullChatInterface(
+        loaderData.messages.data,
+        userPrefs,
+        loaderData.params.character!,
+        loaderData.params.thread!,
+        loaderData.messages.status
+    );
 }
 
 // This function is used to render the full chat interface
 export function fullChatInterface(
-    messageResponse: MessageResponse,
+    messages: Message[],
     userPrefs: Cookie,
     character: string,
-    thread: string
+    thread: string,
+    status: number
 ) {
     const fetcher = useChatFetcher(character, thread);
     let lastDate: Date | null = null;
 
     // process message data
-    let messages = messageResponse.data.map((message) => {
+    let processedMessages = messages.map((message) => {
         return {
             ...message,
             timestamp: parseISO(message.timestamp + "Z"),
         };
     });
-    messages = messages.sort((a, b) => {
+    processedMessages = processedMessages.sort((a, b) => {
         const timeDifference = b.timestamp.getTime() - a.timestamp.getTime();
         if (timeDifference !== 0) {
             return timeDifference;
@@ -134,21 +136,19 @@ export function fullChatInterface(
     return (
         <div className="flex flex-col h-screen">
             <div className="overflow-auto flex flex-grow flex-col-reverse custom-scrollbar pt-20">
-                {messages.length > 0 ? (
-                    messages.map((message, index) => {
-                        const mb = messageBox(message, index, messages.length, userPrefs, lastDate, fetcher);
+                {processedMessages.length > 0 ? (
+                    processedMessages.map((message, index) => {
+                        const mb = messageBox(message, index, processedMessages.length, userPrefs, lastDate, fetcher);
                         lastDate = message.timestamp;
                         return mb;
                     })
                 ) : (
                     <div className="text-center text-text-muted-dark my-4">
-                        {messageResponse.status === 500
-                            ? "Error getting messages from server"
-                            : "Send a message to Ophelia!"}
+                        {status === 500 ? "Error getting messages from server" : "Send a message to Ophelia!"}
                     </div>
                 )}
             </div>
-            {isTypingMessage(messages)}
+            {isTypingMessage(processedMessages)}
             {getResponseImmediately(fetcher)}
             {userInputMessageBox(fetcher)}
         </div>

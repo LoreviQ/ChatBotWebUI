@@ -8,11 +8,7 @@ import { useEffect } from "react";
 import type { Cookie } from "./../utils/cookies";
 import { prefs } from "./../utils/cookies";
 import { api, endpoints } from "../utils/api";
-
-type EventResponse = {
-    data: Event[];
-    status: number;
-};
+import { characterErrMessage } from "../utils/errors";
 
 export type Event = {
     id: number;
@@ -51,19 +47,26 @@ export default function Events() {
         return () => clearInterval(id);
     }, [revalidate]);
 
-    return EventLog(loaderData.events, userPrefs, false);
+    return EventLog(loaderData.events.data, userPrefs, false, loaderData.events.status);
 }
 
-export function EventLog(eventResponse: EventResponse, userPrefs: Cookie, component: boolean) {
+export function EventLog(events: Event[], userPrefs: Cookie, component: boolean, status: number) {
+    // Guard clauses
+    if (status === 500) {
+        return characterErrMessage("Error getting events from the server");
+    }
+    if (events.length === 0) {
+        return characterErrMessage("Oops! Looks like there are no events to show");
+    }
     let lastDate: Date | null = null;
     // process events
-    let events = eventResponse.data.map((event) => {
+    let processedEvents = events.map((event) => {
         return {
             ...event,
             timestamp: parseISO(event.timestamp + "Z"),
         };
     });
-    events = events.sort((a, b) => {
+    processedEvents = processedEvents.sort((a, b) => {
         const timeDifference = b.timestamp.getTime() - a.timestamp.getTime();
         if (timeDifference !== 0) {
             return timeDifference;
@@ -77,45 +80,37 @@ export function EventLog(eventResponse: EventResponse, userPrefs: Cookie, compon
                     component ? "hidden-scrollbar" : "custom-scrollbar"
                 }`}
             >
-                {events.length > 0 ? (
-                    events.map((event, index) => {
-                        const scheduledEvent = event.timestamp > new Date();
-                        if (scheduledEvent && !userPrefs.debug) {
-                            return null;
-                        }
-                        const showDateHeader = !lastDate || !isSameDay(lastDate, event.timestamp);
-                        lastDate = event.timestamp;
-                        const isLastEvent = index === events.length - 1;
-                        return (
-                            <div key={index}>
-                                {isLastEvent ? (
-                                    <div className="text-center text-text-muted-dark my-4">
-                                        {format(event.timestamp, "MMMM do, yyyy")}
-                                    </div>
-                                ) : null}
-                                <div className="w-full items-center rounded-lg my-2 py-1 hover:bg-hover-dark flex justify-between">
-                                    <div className="flex flex-col w-full">
-                                        <p className="px-4 text-xs text-text-muted-dark">
-                                            {`${event.type} - ${format(event.timestamp, "hh:mm a")}`}
-                                        </p>
-                                        <p className="py-1 px-4 break-words text-text-muted-dark">{event.content}</p>
-                                    </div>
+                {processedEvents.map((event, index) => {
+                    const scheduledEvent = event.timestamp > new Date();
+                    if (scheduledEvent && !userPrefs.debug) {
+                        return null;
+                    }
+                    const showDateHeader = !lastDate || !isSameDay(lastDate, event.timestamp);
+                    lastDate = event.timestamp;
+                    const isLastEvent = index === processedEvents.length - 1;
+                    return (
+                        <div key={index}>
+                            {isLastEvent ? (
+                                <div className="text-center text-text-muted-dark my-4">
+                                    {format(event.timestamp, "MMMM do, yyyy")}
                                 </div>
-                                {showDateHeader && !isToday(event.timestamp) && index != 0 && (
-                                    <div className="text-center text-text-muted-dark my-4">
-                                        {format(addDays(event.timestamp, 1), "MMMM do, yyyy")}
-                                    </div>
-                                )}
+                            ) : null}
+                            <div className="w-full items-center rounded-lg my-2 py-1 hover:bg-hover-dark flex justify-between">
+                                <div className="flex flex-col w-full">
+                                    <p className="px-4 text-xs text-text-muted-dark">
+                                        {`${event.type} - ${format(event.timestamp, "hh:mm a")}`}
+                                    </p>
+                                    <p className="py-1 px-4 break-words text-text-muted-dark">{event.content}</p>
+                                </div>
                             </div>
-                        );
-                    })
-                ) : (
-                    <div className="text-center text-text-muted-dark my-4">
-                        {eventResponse.status === 500
-                            ? "Error getting events from the server"
-                            : "Oops! Looks like there are no events to show"}
-                    </div>
-                )}
+                            {showDateHeader && !isToday(event.timestamp) && index != 0 && (
+                                <div className="text-center text-text-muted-dark my-4">
+                                    {format(addDays(event.timestamp, 1), "MMMM do, yyyy")}
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );

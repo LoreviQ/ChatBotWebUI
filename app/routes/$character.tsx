@@ -34,6 +34,7 @@ export type Character = {
     model: string;
     global_positive: string;
     global_negative: string;
+    profile_path: string;
 };
 
 export const meta: MetaFunction = () => {
@@ -115,7 +116,6 @@ export default function Character() {
             setPrimaryColour(loaderData.character.data.favorite_colour);
         }
     }, [loaderData.character.data]);
-    console.log(loaderData);
     // Revalidate the messages every second
     let { revalidate } = useRevalidator();
     useEffect(() => {
@@ -130,11 +130,24 @@ export default function Character() {
                 <div className="container mx-auto max-w-2xl">{outlet}</div>
             ) : (
                 <div className="flex">
-                    <div className="w-1/3">{EventLog(loaderData.events, userPrefs, true)}</div>
                     <div className="w-1/3">
-                        {fullChatInterface(loaderData.messages, userPrefs, loaderData.character.data.path_name, "1")}
+                        {EventLog(loaderData.events.data, userPrefs, true, loaderData.events.status)}
                     </div>
-                    <div className="w-1/3">{PostLog(loaderData.posts, userPrefs, true)}</div>
+                    <div className="w-1/3">
+                        {fullChatInterface(
+                            loaderData.messages.data,
+                            userPrefs,
+                            loaderData.character.data.path_name,
+                            "1",
+                            loaderData.messages.status
+                        )}
+                    </div>
+                    <div className="w-1/3">
+                        {PostLog(loaderData.character.data, loaderData.posts.data, userPrefs, true, [
+                            loaderData.character.status,
+                            loaderData.posts.status,
+                        ])}
+                    </div>
                 </div>
             )}
         </div>

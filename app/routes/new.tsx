@@ -22,7 +22,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
     const formData = await request.formData();
-    console.log(formData);
     const payload = {
         name: formData.get("character_name"),
         path_name: formData.get("path_name"),
