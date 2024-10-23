@@ -113,7 +113,6 @@ export default function Character() {
     const [characterName, setCharacterName] = useState("");
     useEffect(() => {
         if (loaderData.character.data.favorite_colour) {
-            console.log(loaderData.character.data.favorite_colour);
             setPrimaryColour(loaderData.character.data.favorite_colour);
         }
         if (loaderData.character.data.name) {
