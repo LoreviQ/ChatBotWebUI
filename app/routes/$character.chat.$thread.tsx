@@ -138,19 +138,27 @@ export function fullChatInterface(
             <div className="overflow-auto flex flex-grow flex-col-reverse custom-scrollbar pt-20">
                 {processedMessages.length > 0 ? (
                     processedMessages.map((message, index) => {
-                        const mb = messageBox(message, index, processedMessages.length, userPrefs, lastDate, fetcher);
+                        const mb = messageBox(
+                            message,
+                            character,
+                            index,
+                            processedMessages.length,
+                            userPrefs,
+                            lastDate,
+                            fetcher
+                        );
                         lastDate = message.timestamp;
                         return mb;
                     })
                 ) : (
                     <div className="text-center text-text-muted-dark my-4">
-                        {status === 500 ? "Error getting messages from server" : "Send a message to Ophelia!"}
+                        {status === 500 ? "Error getting messages from server" : `Send a message to ${character}!`}
                     </div>
                 )}
             </div>
-            {isTypingMessage(processedMessages)}
-            {getResponseImmediately(fetcher)}
-            {userInputMessageBox(fetcher)}
+            {isTypingMessage(processedMessages, character)}
+            {getResponseImmediately(fetcher, character)}
+            {userInputMessageBox(fetcher, character)}
         </div>
     );
 }
@@ -158,6 +166,7 @@ export function fullChatInterface(
 // Renders a single message in the chat interface
 function messageBox(
     message: ProcessedMessage,
+    character: string,
     index: number,
     messagesLen: number,
     userPrefs: Cookie,
@@ -182,7 +191,7 @@ function messageBox(
                 <div className="flex flex-col w-full">
                     <div className="flex justify-between">
                         <b className="px-4" style={{ fontSize: "1.25em" }}>
-                            {message.role === "user" ? "Oliver" : "Ophelia"}
+                            {message.role === "user" ? "Oliver" : character}
                         </b>
                         <fetcher.Form method="DELETE" action={fetcher.formAction}>
                             <input type="hidden" name="message_id" value={message.id} />
@@ -211,7 +220,7 @@ function messageBox(
 }
 
 // Renders the "Ophelia is typing..." message
-function isTypingMessage(messages: ProcessedMessage[]) {
+function isTypingMessage(messages: ProcessedMessage[], character: string) {
     const [isTyping, setIsTyping] = useState(false);
     useEffect(() => {
         const now = new Date();
@@ -224,28 +233,28 @@ function isTypingMessage(messages: ProcessedMessage[]) {
         return (
             <div className="flex items-center ps-8">
                 <div className="loader me-6"></div>
-                <small className="text-text-muted-dark">Ophelia is typing...</small>
+                <small className="text-text-muted-dark">{character} is typing...</small>
             </div>
         );
     }
 }
 
 // Renders the "Get a response from Ophelia immediately" button
-function getResponseImmediately(fetcher: any) {
+function getResponseImmediately(fetcher: any, character: string) {
     const [isSpinning, setIsSpinning] = useState(false);
     return (
         <fetcher.Form method="PATCH" className="py-4 ps-4" action={fetcher.formAction}>
             <button type="submit" className="pe-2 fa-lg text-character">
                 <FontAwesomeIcon className={isSpinning ? "fa-spin" : ""} icon={faArrowsRotate} />
             </button>
-            <small className="text-text-muted-dark self-end">Get a response from Ophelia immediately</small>
+            <small className="text-text-muted-dark self-end">Get a response from {character} immediately</small>
         </fetcher.Form>
     );
 }
 
 // Renders the user input message box
-function userInputMessageBox(fetcher: any) {
-    const placeholder_message = "Send a message to Ophelia!\nEnter to send. Alt-Enter for linebreak.";
+function userInputMessageBox(fetcher: any, character: string) {
+    const placeholder_message = `Send a message to ${character}!\nEnter to send. Alt-Enter for linebreak.`;
     const [textareaValue, setTextareaValue] = useState("");
 
     // Clear the textarea when a message is sent
