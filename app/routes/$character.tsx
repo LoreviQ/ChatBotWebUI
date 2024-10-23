@@ -61,8 +61,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         eventStatus = 500;
     }
     let messageData: Message[], messageStatus: number;
+    // temporary, threads will be dynamic
+    let thread = "1";
+    if (params.character === "test") {
+        thread = "2";
+    }
     try {
-        const response = await api.get(endpoints.threadMessages("1"));
+        const response = await api.get(endpoints.threadMessages(thread));
         messageData = await response.data;
         messageStatus = response.status;
     } catch (error) {
@@ -111,11 +116,18 @@ export default function Character() {
     const userPrefs = loaderData.userPrefs as Cookie;
     const outlet = useOutlet();
     const [primaryColour, setPrimaryColour] = useState("#0000FF");
+    const [thread, setThread] = useState("1");
+
     useEffect(() => {
         if (loaderData.character.data.favorite_colour) {
             setPrimaryColour(loaderData.character.data.favorite_colour);
         }
-    }, [loaderData.character.data]);
+        // temporary, threads will be dynamic
+        if (loaderData.params.character === "test") {
+            console.log(loaderData.params.character);
+            setThread("2");
+        }
+    }, [loaderData]);
     // Revalidate the messages every second
     let { revalidate } = useRevalidator();
     useEffect(() => {
@@ -138,7 +150,7 @@ export default function Character() {
                             loaderData.messages.data,
                             userPrefs,
                             loaderData.character.data,
-                            "1",
+                            thread,
                             loaderData.messages.status
                         )}
                     </div>
