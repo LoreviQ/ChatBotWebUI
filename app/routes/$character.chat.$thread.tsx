@@ -33,13 +33,13 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-    let characterData: Character[], characterStatus: number;
+    let characterData: Character, characterStatus: number;
     try {
         const response = await api.get(endpoints.characterByPath(params.character!));
         characterData = await response.data;
         characterStatus = response.status;
     } catch (error) {
-        characterData = [];
+        characterData = {} as Character;
         characterStatus = 500;
     }
     let messageData: Message[], messageStatus: number;
@@ -102,7 +102,7 @@ export default function Chat() {
     return fullChatInterface(
         loaderData.messages.data,
         userPrefs,
-        loaderData.params.character!,
+        loaderData.character.data,
         loaderData.params.thread!,
         loaderData.messages.status
     );
@@ -112,11 +112,11 @@ export default function Chat() {
 export function fullChatInterface(
     messages: Message[],
     userPrefs: Cookie,
-    character: string,
+    character: Character,
     thread: string,
     status: number
 ) {
-    const fetcher = useChatFetcher(character, thread);
+    const fetcher = useChatFetcher(character.name, thread);
     let lastDate: Date | null = null;
 
     // process message data
@@ -140,7 +140,7 @@ export function fullChatInterface(
                     processedMessages.map((message, index) => {
                         const mb = messageBox(
                             message,
-                            character,
+                            character.name,
                             index,
                             processedMessages.length,
                             userPrefs,
@@ -156,9 +156,9 @@ export function fullChatInterface(
                     </div>
                 )}
             </div>
-            {isTypingMessage(processedMessages, character)}
-            {getResponseImmediately(fetcher, character)}
-            {userInputMessageBox(fetcher, character)}
+            {isTypingMessage(processedMessages, character.name)}
+            {getResponseImmediately(fetcher, character.name)}
+            {userInputMessageBox(fetcher, character.name)}
         </div>
     );
 }

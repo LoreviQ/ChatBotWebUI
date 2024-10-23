@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { prefs } from "./../utils/cookies";
-import { useLoaderData, useFetcher, useSubmit, useOutlet, useRevalidator } from "@remix-run/react";
+import { useLoaderData, useFetcher, useSubmit, useOutlet, useRevalidator, useNavigate } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
 import type { Event } from "./$character.events";
 import { EventLog } from "./$character.events";
@@ -125,7 +125,7 @@ export default function Character() {
 
     return (
         <div style={{ "--color-primary": primaryColour } as React.CSSProperties}>
-            {Header(loaderData.character.data.name, userPrefs)}
+            {Header(loaderData.character.data, userPrefs)}
             {outlet ? (
                 <div className="container mx-auto max-w-2xl">{outlet}</div>
             ) : (
@@ -137,7 +137,7 @@ export default function Character() {
                         {fullChatInterface(
                             loaderData.messages.data,
                             userPrefs,
-                            loaderData.character.data.path_name,
+                            loaderData.character.data,
                             "1",
                             loaderData.messages.status
                         )}
@@ -154,16 +154,18 @@ export default function Character() {
     );
 }
 
-function Header(characterName: string, userPrefs: Cookie) {
+function Header(character: Character, userPrefs: Cookie) {
     const fetcher = useFetcher();
     const submit = useSubmit();
+    const [model, setModel] = useState(false);
+    const navigate = useNavigate();
     return (
         <div>
             <div
                 className="
                     absolute top-0 left-0 w-full h-20 flex items-center
                     backdrop-blur-sm backdrop-saturate-200 backdrop-contrast-150 bg-bg-dark/50 
-                    border-double border-b-4 border-character
+                    border-b-4 border-character
                     z-40
                 "
             >
@@ -195,9 +197,32 @@ function Header(characterName: string, userPrefs: Cookie) {
                     </label>
                 </fetcher.Form>
             </div>
-            <p className="absolute z-50 mt-4 left-1/2 transform -translate-x-1/2 text-5xl font-ophelia font-outline">
-                {characterName}
-            </p>
+            <button
+                className="absolute z-40 mt-4 left-1/2 transform -translate-x-1/2 text-5xl font-ophelia font-outline"
+                type="button"
+                onClick={() => setModel(!model)}
+            >
+                {character.name}
+            </button>
+            <div
+                className={`
+                    flex text-xl justify-between absolute z-50 left-1/2 
+                    transform -translate-x-1/2 p-2 rounded-lg bg-bg-dark 
+                    border-2 border-t-4 border-character
+                    ${model ? "" : "hidden"}
+                    `}
+                style={{ top: "76px" }}
+            >
+                <button className="px-4 mx-2 py-2" onClick={() => navigate(`/${character.path_name}/events`)}>
+                    Events
+                </button>
+                <button className="px-4 mx-2 py-2" onClick={() => navigate(`/${character.path_name}/chat/1`)}>
+                    Chat
+                </button>
+                <button className="px-4 mx-2 py-2" onClick={() => navigate(`/${character.path_name}/posts`)}>
+                    Posts
+                </button>
+            </div>
         </div>
     );
 }
