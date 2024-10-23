@@ -1,6 +1,7 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
 import { useRouteError } from "@remix-run/react";
+import { getColourVariable } from "./utils/colours";
 
 import "./tailwind.css";
 import "./styles.css";
@@ -36,11 +37,13 @@ export function ErrorBoundary() {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
+    const primaryColor = getColourVariable("#FF0000", "primary");
     return (
         <html lang="en">
             <head>
                 <meta charSet="utf-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <style>{primaryColor}</style>
                 <Meta />
                 <Links />
             </head>

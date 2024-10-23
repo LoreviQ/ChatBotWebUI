@@ -11,6 +11,7 @@ import { faTrash, faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import { prefs } from "./../utils/cookies";
 import { api, endpoints } from "../utils/api";
 import type { Cookie } from "./../utils/cookies";
+import { c } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
 
 type MessageResponse = {
     data: Message[];
@@ -38,19 +39,29 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-    let responseData: Message[], status: number;
+    let characterData: Message[], characterStatus: number;
+    try {
+        const response = await api.get(endpoints.characterByPath(params.character!));
+        characterData = await response.data;
+        characterStatus = response.status;
+    } catch (error) {
+        characterData = [];
+        characterStatus = 500;
+    }
+    let messageData: Message[], messageStatus: number;
     try {
         const response = await api.get(endpoints.threadMessages(params.thread!));
-        responseData = await response.data;
-        status = response.status;
+        messageData = await response.data;
+        messageStatus = response.status;
     } catch (error) {
-        responseData = [];
-        status = 500;
+        messageData = [];
+        messageStatus = 500;
     }
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};
     return json({
-        messages: { data: responseData, status: status },
+        character: { data: characterData, status: characterStatus },
+        messages: { data: messageData, status: messageStatus },
         userPrefs: { debug: cookie.debug },
         params: params,
     });
@@ -121,13 +132,14 @@ export function fullChatInterface(
         }
         return b.id - a.id;
     });
-
     return (
         <div className="flex flex-col h-screen">
             <div className="overflow-auto flex flex-grow flex-col-reverse custom-scrollbar pt-20">
                 {messages.length > 0 ? (
                     messages.map((message, index) => {
-                        return messageBox(message, index, messages.length, userPrefs, lastDate, fetcher);
+                        const mb = messageBox(message, index, messages.length, userPrefs, lastDate, fetcher);
+                        lastDate = message.timestamp;
+                        return mb;
                     })
                 ) : (
                     <div className="text-center text-text-muted-dark my-4">
@@ -158,7 +170,7 @@ function messageBox(
         return null;
     }
     const showDateHeader = !lastDate || !isSameDay(lastDate, message.timestamp);
-    lastDate = message.timestamp;
+
     const isLastMessage = index === messagesLen - 1;
     return (
         <div key={index}>
@@ -175,7 +187,7 @@ function messageBox(
                         </b>
                         <fetcher.Form method="DELETE" action={fetcher.formAction}>
                             <input type="hidden" name="message_id" value={message.id} />
-                            <button type="submit" className="px-4 text-primary-dark">
+                            <button type="submit" className="px-4 text-character">
                                 <FontAwesomeIcon icon={faTrash} />
                             </button>
                         </fetcher.Form>

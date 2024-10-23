@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { prefs } from "./../utils/cookies";
-import { useLoaderData, Form } from "@remix-run/react";
+import { useLoaderData, Form, redirect } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
 import type { Cookie } from "./../utils/cookies";
 import { api, endpoints } from "../utils/api";
@@ -20,7 +20,34 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
 }
 
-export async function action({ request }: ActionFunctionArgs) {}
+export async function action({ request }: ActionFunctionArgs) {
+    const formData = await request.formData();
+    console.log(formData);
+    const payload = {
+        name: formData.get("character_name"),
+        path_name: formData.get("path_name"),
+        description: formData.get("description"),
+        age: formData.get("age"),
+        height: formData.get("height"),
+        personality: formData.get("personality"),
+        appearance: formData.get("appearance"),
+        loves: formData.get("loves"),
+        hates: formData.get("hates"),
+        details: formData.get("details"),
+        scenario: formData.get("scenario"),
+        important: formData.get("important"),
+        initial_message: formData.get("initial_message"),
+        favorite_colour: formData.get("fave_colour"),
+        img_gen: formData.get("imgGen"),
+        model: formData.get("model"),
+        global_positive: formData.get("global_positive"),
+        global_negative: formData.get("global_negative"),
+    };
+    const response = await api.post(endpoints.newCharacter(), payload);
+    if (response.status === 200) {
+        return redirect(`/${response.data}`);
+    }
+}
 
 export default function Character() {
     const loaderData = useLoaderData<typeof loader>();
@@ -31,12 +58,17 @@ export default function Character() {
 
 function NewCharacterForm(userPrefs: Cookie) {
     const [imgGen, setImgGen] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
     const imagePlaceholder =
         "small, cuboid, single eye,\nGlobally aplied to all generated images of this character for consistency";
     const gpPlaceholder = "score_9, score_8_up, score_7_up, realistic, etc...\nModel dependent";
     return (
         <div className="container mx-auto max-w-2xl">
-            <Form>
+            <Form action="/new" method="POST">
                 <p className="flex text-2xl justify-center mb-4">Character Details</p>
                 <div className="grid grid-cols-4 gap-4 mb-5">
                     <label className="text-text-dark flex items-center justify-end">Name</label>
@@ -65,17 +97,19 @@ function NewCharacterForm(userPrefs: Cookie) {
                         required
                     />
                 </div>
-                <div className="grid grid-cols-4 gap-4 mb-5">
-                    <div>
-                        <label className="text-text-dark flex items-center justify-end">Favorite Colour</label>
+                {isMounted && (
+                    <div className="grid grid-cols-4 gap-4 mb-5">
+                        <div>
+                            <label className="text-text-dark flex items-center justify-end">Favorite Colour</label>
+                        </div>
+                        <input
+                            type="color"
+                            name="fave_colour"
+                            className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
+                            defaultValue="#FF0000"
+                        />
                     </div>
-                    <input
-                        type="color"
-                        className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
-                        id="hs-color-input"
-                        defaultValue="#FF0000"
-                    />
-                </div>
+                )}
                 <div className="grid grid-cols-4 gap-4 mb-5">
                     <label className="text-text-dark flex items-center justify-end">Description</label>
                     <textarea

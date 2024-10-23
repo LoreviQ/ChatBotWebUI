@@ -25,6 +25,7 @@ export default {
         "text-muted-dark": "#71717a",
         "hover-dark": "#27272a",
         "primary-dark": "#db2777",
+        "character": 'var(--color-primary)'
       },
     },
   },
