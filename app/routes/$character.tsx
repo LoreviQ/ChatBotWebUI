@@ -110,15 +110,12 @@ export default function Character() {
     const userPrefs = loaderData.userPrefs as Cookie;
     const outlet = useOutlet();
     const [primaryColour, setPrimaryColour] = useState("#0000FF");
-    const [characterName, setCharacterName] = useState("");
     useEffect(() => {
         if (loaderData.character.data.favorite_colour) {
             setPrimaryColour(loaderData.character.data.favorite_colour);
         }
-        if (loaderData.character.data.name) {
-            setCharacterName(loaderData.character.data.name);
-        }
     }, [loaderData.character.data]);
+    console.log(loaderData);
     // Revalidate the messages every second
     let { revalidate } = useRevalidator();
     useEffect(() => {
@@ -128,13 +125,15 @@ export default function Character() {
 
     return (
         <div style={{ "--color-primary": primaryColour } as React.CSSProperties}>
-            {Header(characterName, userPrefs)}
+            {Header(loaderData.character.data.name, userPrefs)}
             {outlet ? (
                 <div className="container mx-auto max-w-2xl">{outlet}</div>
             ) : (
                 <div className="flex">
                     <div className="w-1/3">{EventLog(loaderData.events, userPrefs, true)}</div>
-                    <div className="w-1/3">{fullChatInterface(loaderData.messages, userPrefs, "ophelia", "1")}</div>
+                    <div className="w-1/3">
+                        {fullChatInterface(loaderData.messages, userPrefs, loaderData.character.data.path_name, "1")}
+                    </div>
                     <div className="w-1/3">{PostLog(loaderData.posts, userPrefs, true)}</div>
                 </div>
             )}

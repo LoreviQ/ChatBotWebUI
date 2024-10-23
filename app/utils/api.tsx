@@ -11,8 +11,8 @@ const endpoints = {
     newMessage: (thread_id: string) => `/threads/${thread_id}/messages/new`,
     message: (message_id: string) => `/messages/${message_id}`,
     characterByPath: (path: string) => `/characters/path/${path}`,
-    characterEvents: (character_id: string) => `/events/${character_id}`,
-    characterPosts: (character_id: string) => `/posts/${character_id}`,
+    characterEvents: (char_path: string) => `/events/${char_path}`,
+    characterPosts: (char_path: string) => `/posts/${char_path}`,
     imageURL: (image_path: string) => `${BASEURL}/images/${image_path}`,
     newCharacter: () => `/characters/new`,
 };
