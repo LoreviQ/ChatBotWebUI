@@ -1,6 +1,8 @@
 import axios from "axios";
+import dotenv from "dotenv";
 
-const BASEURL = "http://rngio-81-141-119-172.a.free.pinggy.link";
+dotenv.config();
+const BASEURL = process.env.API_URL;
 
 const api = axios.create({
     baseURL: BASEURL,
