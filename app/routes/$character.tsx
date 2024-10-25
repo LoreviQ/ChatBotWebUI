@@ -117,20 +117,9 @@ export default function Character() {
     const loaderData = useLoaderData<typeof loader>();
     const userPrefs = loaderData.userPrefs as Cookie;
     const outlet = useOutlet();
-    const [primaryColour, setPrimaryColour] = useState("#0000FF");
+
     const [thread, setThread] = useState("1");
 
-    useEffect(() => {
-        if (loaderData.character.data.favorite_colour) {
-            setPrimaryColour(loaderData.character.data.favorite_colour);
-        }
-        // temporary, threads will be dynamic
-        if (loaderData.params.character === "test") {
-            setThread("2");
-        } else if (loaderData.params.character === "steve") {
-            setThread("3");
-        }
-    }, [loaderData]);
     // Revalidate the messages every second
     let { revalidate } = useRevalidator();
     useEffect(() => {
@@ -139,8 +128,7 @@ export default function Character() {
     }, [revalidate]);
 
     return (
-        <div style={{ "--color-primary": primaryColour } as React.CSSProperties}>
-            {Header(loaderData.character.data, userPrefs)}
+        <div>
             {outlet ? (
                 <div className="container mx-auto max-w-2xl">{outlet}</div>
             ) : (
@@ -165,79 +153,6 @@ export default function Character() {
                     </div>
                 </div>
             )}
-        </div>
-    );
-}
-
-function Header(character: Character, userPrefs: Cookie) {
-    const fetcher = useFetcher();
-    const submit = useSubmit();
-    const [model, setModel] = useState(false);
-    const navigate = useNavigate();
-    return (
-        <div>
-            <div
-                className="
-                    absolute top-0 left-0 w-full h-20 flex items-center
-                    backdrop-blur-sm backdrop-saturate-200 backdrop-contrast-150 bg-bg-dark/50 
-                    border-b-4 border-character
-                    z-40
-                "
-            >
-                <fetcher.Form
-                    className="p-4"
-                    onChange={(e) => {
-                        submit(e.currentTarget, { method: "post", navigate: false });
-                    }}
-                >
-                    <label className="inline-flex items-center cursor-pointer">
-                        <input
-                            name="debug"
-                            type="checkbox"
-                            value={1}
-                            className="sr-only peer"
-                            defaultChecked={userPrefs.debug}
-                        />
-                        <div
-                            className="
-                                relative w-11 h-6 rounded-full
-                                bg-hover-dark
-                                peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full  peer-checked:bg-character
-                                after:content-[''] after:absolute after:top-[2px] after:start-[2px] 
-                                after:border after:border-hover-dark peer-checked:after:border-white after:bg-white 
-                                after:rounded-full after:h-5 after:w-5 after:transition-all  
-                            "
-                        ></div>
-                        <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Debug</span>
-                    </label>
-                </fetcher.Form>
-            </div>
-            <button
-                className="absolute z-40 mt-4 left-1/2 transform -translate-x-1/2 text-5xl font-ophelia font-outline"
-                type="button"
-                onClick={() => setModel(!model)}
-            >
-                {character.name}
-            </button>
-            <div
-                className={`
-                    flex text-xl justify-between absolute z-50 left-1/2 
-                    transform -translate-x-1/2 p-2 rounded-lg bg-bg-dark 
-                    border-2 border-t-4 border-character
-                    ${model ? "" : "hidden"}
-                    `}
-                style={{ top: "76px" }}
-            >
-                <button className="px-4 mx-2 py-2" onClick={() => navigate(`/${character.path_name}/events`)}>
-                    Events
-                </button>
-                <button className="px-4 mx-2 py-2" onClick={() => navigate(`/${character.path_name}/chat/1`)}>
-                    Chat
-                </button>
-                <button className="px-4 mx-2 py-2" onClick={() => navigate(`/${character.path_name}/posts`)}>
-                    Posts
-                </button>
-            </div>
         </div>
     );
 }
