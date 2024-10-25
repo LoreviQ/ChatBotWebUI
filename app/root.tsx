@@ -16,6 +16,7 @@ import { prefs } from "./utils/cookies";
 import { api, endpoints } from "./utils/api";
 import { Character } from "./routes/characters.$character.all";
 import { useState, useEffect } from "react";
+import { getConstrastingColour } from "./utils/colours";
 
 import "./tailwind.css";
 import "./styles.css";
@@ -80,10 +81,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
     // Set state based on character data
     const [primaryColour, setPrimaryColour] = useState("#FFFFFF");
+    const [contrastingColour, setContrastingColour] = useState("#000000");
     const [title, setTitle] = useState("Echoes AI");
     useEffect(() => {
         if (character.favorite_colour) {
             setPrimaryColour(character.favorite_colour);
+            setContrastingColour(getConstrastingColour(character.favorite_colour));
         }
         if (character.name) {
             setTitle(character.name);
@@ -97,7 +100,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Meta />
                 <Links />
             </head>
-            <body style={{ "--color-primary": primaryColour } as React.CSSProperties}>
+            <body
+                style={
+                    { "--color-primary": primaryColour, "--color-contrast": contrastingColour } as React.CSSProperties
+                }
+            >
                 <Header title={title} userPrefs={userPrefs} />
                 {children}
                 <ScrollRestoration />
@@ -133,22 +140,23 @@ function Header({ title, userPrefs }: headerProps) {
                     z-40
                 "
             >
-                <fetcher.Form
-                    className="p-4"
-                    onChange={(e) => {
-                        submit(e.currentTarget, { method: "post", navigate: false });
-                    }}
-                >
-                    <label className="inline-flex items-center cursor-pointer">
-                        <input
-                            name="debug"
-                            type="checkbox"
-                            value={1}
-                            className="sr-only peer"
-                            defaultChecked={userPrefs.debug}
-                        />
-                        <div
-                            className="
+                <div className="p-4 flex justify-between w-full">
+                    <fetcher.Form
+                        className="flex"
+                        onChange={(e) => {
+                            submit(e.currentTarget, { method: "post", navigate: false });
+                        }}
+                    >
+                        <label className="items-center inline-flex cursor-pointer">
+                            <input
+                                name="debug"
+                                type="checkbox"
+                                value={1}
+                                className="sr-only peer"
+                                defaultChecked={userPrefs.debug}
+                            />
+                            <div
+                                className="
                                 relative w-11 h-6 rounded-full
                                 bg-hover-dark
                                 peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full  peer-checked:bg-character
@@ -156,12 +164,20 @@ function Header({ title, userPrefs }: headerProps) {
                                 after:border after:border-hover-dark peer-checked:after:border-white after:bg-white 
                                 after:rounded-full after:h-5 after:w-5 after:transition-all  
                             "
-                        ></div>
-                        <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Debug</span>
-                    </label>
-                </fetcher.Form>
+                            ></div>
+                            <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Debug</span>
+                        </label>
+                    </fetcher.Form>
+                    <button
+                        className="py-2 px-4 border rounded font-semibold
+                        bg-transparent  text-character border-character
+                        hover:bg-character hover:text-contrast hover:border-transparent"
+                    >
+                        Login
+                    </button>
+                </div>
                 <button
-                    className="absolute z-40 mt-4 left-1/2 transform -translate-x-1/2 text-5xl font-ophelia font-outline"
+                    className="absolute z-40 left-1/2 transform -translate-x-1/2 text-5xl font-ophelia font-outline"
                     type="button"
                 >
                     {title}

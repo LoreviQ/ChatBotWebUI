@@ -1,16 +1,5 @@
-// change hex to rgb
-export const getRGBColour = (hex: string, type: string) => {
-    let colour = hex.replace(/#/g, "");
-    // rgb values
-    var r = parseInt(colour.slice(0, 2), 16);
-    var g = parseInt(colour.slice(2, 4), 16);
-    var b = parseInt(colour.slice(4, 6), 16);
-
-    return `--color-${type}: ${r}, ${g}, ${b};`;
-};
-
 // get constrasting accessiblity colour
-export const getAccessibleColour = (hex: string) => {
+export const getConstrastingColour = (hex: string) => {
     let colour = hex.replace(/#/g, "");
     // rgb values
     var r = parseInt(colour.slice(0, 2), 16);
