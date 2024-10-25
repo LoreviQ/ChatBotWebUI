@@ -50,7 +50,7 @@ export default function Events() {
 
     return (
         <div className="container mx-auto max-w-2xl">
-            <EventLog events={events} userPrefs={userPrefs} component={false} status={loaderData.events.status} />
+            <EventLog events={events} userPrefs={userPrefs} component={false} statuses={[loaderData.events.status]} />
         </div>
     );
 }
@@ -59,14 +59,16 @@ interface EventLogProps {
     events: Event[];
     userPrefs: Cookie;
     component: boolean;
-    status: number;
+    statuses: number[];
 }
 
-export function EventLog({ events, userPrefs, component, status }: EventLogProps) {
+export function EventLog({ events, userPrefs, component, statuses }: EventLogProps) {
     // Guard clauses
-    if (status === 500) {
-        return characterErrMessage("Error getting events from the server");
-    }
+    statuses.map((status) => {
+        if (status === 500) {
+            return characterErrMessage("Error getting events from the server");
+        }
+    });
     if (events.length === 0) {
         return characterErrMessage("Oops! Looks like there are no events to show");
     }
