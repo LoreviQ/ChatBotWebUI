@@ -52,7 +52,7 @@ export function ErrorBoundary() {
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
     let characterData: Character, characterStatus: number;
-    if (params && params.character) {
+    if (params?.character) {
         try {
             const response = await api.get(endpoints.characterByPath(params.character!));
             characterData = await response.data;
