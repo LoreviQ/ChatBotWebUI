@@ -10,6 +10,7 @@ import {
     useLoaderData,
     useFetcher,
     useSubmit,
+    Link,
 } from "@remix-run/react";
 import type { Cookie } from "./utils/cookies";
 import { prefs } from "./utils/cookies";
@@ -168,14 +169,17 @@ function Header({ title, userPrefs }: headerProps) {
                             <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Debug</span>
                         </label>
                     </fetcher.Form>
-                    <button
-                        className="py-2 px-4 border rounded font-semibold
+                    <Link to="/login">
+                        <button
+                            className="py-2 px-4 border rounded font-semibold
                         bg-transparent  text-character border-character
                         hover:bg-character hover:text-contrast hover:border-transparent"
-                    >
-                        Login
-                    </button>
+                        >
+                            Login
+                        </button>
+                    </Link>
                 </div>
+
                 <button
                     className="absolute z-40 left-1/2 transform -translate-x-1/2 text-5xl font-ophelia font-outline"
                     type="button"
