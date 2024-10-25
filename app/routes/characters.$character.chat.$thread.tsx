@@ -87,10 +87,10 @@ export default function Chat() {
     const messages = loaderData.messages.data as Message[];
     const userPrefs = loaderData.userPrefs as Cookie;
 
-    // Revalidate the messages every second
+    // Revalidate the messages every 10 seconds
     let { revalidate } = useRevalidator();
     useEffect(() => {
-        let id = setInterval(revalidate, 1000);
+        let id = setInterval(revalidate, 10000);
         return () => clearInterval(id);
     }, [revalidate]);
 
