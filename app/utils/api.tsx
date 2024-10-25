@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASEURL = "http://localhost:5000";
+const BASEURL = "http://rngio-81-141-119-172.a.free.pinggy.link";
 
 const api = axios.create({
     baseURL: BASEURL,

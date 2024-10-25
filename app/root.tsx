@@ -1,6 +1,21 @@
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "@remix-run/react";
-import type { LinksFunction } from "@remix-run/node";
-import { useRouteError } from "@remix-run/react";
+import { json } from "@remix-run/node";
+import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
+import {
+    Links,
+    Meta,
+    Outlet,
+    Scripts,
+    ScrollRestoration,
+    useRouteError,
+    useLoaderData,
+    useFetcher,
+    useSubmit,
+} from "@remix-run/react";
+import type { Cookie } from "./utils/cookies";
+import { prefs } from "./utils/cookies";
+import { api, endpoints } from "./utils/api";
+import { Character } from "./routes/characters.$character.all";
+import { useState, useEffect } from "react";
 
 import "./tailwind.css";
 import "./styles.css";
@@ -35,7 +50,45 @@ export function ErrorBoundary() {
     );
 }
 
+export async function loader({ params, request }: LoaderFunctionArgs) {
+    let characterData: Character, characterStatus: number;
+    if (params && params.character) {
+        try {
+            const response = await api.get(endpoints.characterByPath(params.character!));
+            characterData = await response.data;
+            characterStatus = response.status;
+        } catch (error) {
+            characterData = {} as Character;
+            characterStatus = 500;
+        }
+    } else {
+        characterData = {} as Character;
+        characterStatus = 404;
+    }
+    const cookieHeader = request.headers.get("Cookie");
+    const cookie = (await prefs.parse(cookieHeader)) || {};
+    return json({
+        character: { data: characterData, status: characterStatus },
+        userPrefs: { debug: cookie.debug },
+    });
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
+    const loaderData = useLoaderData<typeof loader>();
+    const character = loaderData.character.data as Character;
+    const userPrefs = loaderData.userPrefs as Cookie;
+
+    // Set state based on character data
+    const [primaryColour, setPrimaryColour] = useState("#FFFFFF");
+    const [title, setTitle] = useState("Echoes AI");
+    useEffect(() => {
+        if (character.favorite_colour) {
+            setPrimaryColour(character.favorite_colour);
+        }
+        if (character.name) {
+            setTitle(character.name);
+        }
+    }, [character]);
     return (
         <html lang="en">
             <head>
@@ -44,7 +97,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Meta />
                 <Links />
             </head>
-            <body>
+            <body style={{ "--color-primary": primaryColour } as React.CSSProperties}>
+                <Header title={title} userPrefs={userPrefs} />
                 {children}
                 <ScrollRestoration />
                 <Scripts />
@@ -57,6 +111,81 @@ export default function App() {
     return (
         <div>
             <Outlet />
+        </div>
+    );
+}
+
+// Rendrs the header of the page
+interface headerProps {
+    title: string;
+    userPrefs: Cookie;
+}
+function Header({ title, userPrefs }: headerProps) {
+    const fetcher = useFetcher();
+    const submit = useSubmit();
+    return (
+        <div>
+            <div
+                className="
+                    absolute top-0 left-0 w-full h-20 flex items-center
+                    backdrop-blur-sm backdrop-saturate-200 backdrop-contrast-150 bg-bg-dark/50 
+                    border-b-4 border-character
+                    z-40
+                "
+            >
+                <fetcher.Form
+                    className="p-4"
+                    onChange={(e) => {
+                        submit(e.currentTarget, { method: "post", navigate: false });
+                    }}
+                >
+                    <label className="inline-flex items-center cursor-pointer">
+                        <input
+                            name="debug"
+                            type="checkbox"
+                            value={1}
+                            className="sr-only peer"
+                            defaultChecked={userPrefs.debug}
+                        />
+                        <div
+                            className="
+                                relative w-11 h-6 rounded-full
+                                bg-hover-dark
+                                peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full  peer-checked:bg-character
+                                after:content-[''] after:absolute after:top-[2px] after:start-[2px] 
+                                after:border after:border-hover-dark peer-checked:after:border-white after:bg-white 
+                                after:rounded-full after:h-5 after:w-5 after:transition-all  
+                            "
+                        ></div>
+                        <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Debug</span>
+                    </label>
+                </fetcher.Form>
+                <button
+                    className="absolute z-40 mt-4 left-1/2 transform -translate-x-1/2 text-5xl font-ophelia font-outline"
+                    type="button"
+                >
+                    {title}
+                </button>
+            </div>
+        </div>
+    );
+}
+
+function HeaderModel() {
+    return (
+        <div>
+            <div
+                className={`
+                        flex text-xl justify-between absolute z-50 left-1/2 
+                        transform -translate-x-1/2 p-2 rounded-lg bg-bg-dark 
+                        border-2 border-t-4 border-character
+                        `}
+                style={{ top: "76px" }}
+            >
+                <button className="px-4 mx-2 py-2">Events</button>
+                <button className="px-4 mx-2 py-2">Chat</button>
+                <button className="px-4 mx-2 py-2">Posts</button>
+            </div>
         </div>
     );
 }

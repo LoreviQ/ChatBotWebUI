@@ -6,22 +6,15 @@ import { useEffect, useState } from "react";
 import { format, parseISO, isSameDay, isToday, addDays, addSeconds } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
-
-import { prefs } from "./../utils/cookies";
+import { characterErrMessage } from "../utils/errors";
+import { prefs } from "../utils/cookies";
 import { api, endpoints } from "../utils/api";
-import type { Cookie } from "./../utils/cookies";
-import type { Character } from "./$character";
+import type { Cookie } from "../utils/cookies";
+import type { Character } from "./characters.$character.all";
 
 export type Message = {
     id: number;
-    timestamp: string;
-    role: string;
-    content: string;
-};
-
-type ProcessedMessage = {
-    id: number;
-    timestamp: Date;
+    timestamp: string | Date;
     role: string;
     content: string;
 };
@@ -90,32 +83,49 @@ export async function action({ params, request }: ActionFunctionArgs) {
 // Entry point for this endpoint
 export default function Chat() {
     const loaderData = useLoaderData<typeof loader>();
-    let { revalidate } = useRevalidator();
+    const character = loaderData.character.data as Character;
+    const messages = loaderData.messages.data as Message[];
     const userPrefs = loaderData.userPrefs as Cookie;
 
-    // Revalidate the messages every second
+    // Revalidate the messages every 10 seconds
+    let { revalidate } = useRevalidator();
     useEffect(() => {
-        let id = setInterval(revalidate, 1000);
+        let id = setInterval(revalidate, 10000);
         return () => clearInterval(id);
     }, [revalidate]);
 
-    return fullChatInterface(
-        loaderData.messages.data,
-        userPrefs,
-        loaderData.character.data,
-        loaderData.params.thread!,
-        loaderData.messages.status
+    return (
+        <div className="container mx-auto max-w-2xl">
+            <FullChat
+                character={character}
+                messages={messages}
+                userPrefs={userPrefs}
+                thread={loaderData.params.thread!}
+                statuses={[loaderData.character.status, loaderData.messages.status]}
+            />
+        </div>
     );
 }
 
-// This function is used to render the full chat interface
-export function fullChatInterface(
-    messages: Message[],
-    userPrefs: Cookie,
-    character: Character,
-    thread: string,
-    status: number
-) {
+// Renders the entire chat interface
+interface FullChatProps {
+    character: Character;
+    messages: Message[];
+    userPrefs: Cookie;
+    thread: string;
+    statuses: number[];
+}
+export function FullChat({ character, messages, userPrefs, thread, statuses }: FullChatProps) {
+    // Guard clauses
+    statuses.map((status) => {
+        if (status === 500) {
+            return characterErrMessage("Error getting messages from the server");
+        }
+    });
+    if (messages.length === 0) {
+        return characterErrMessage(`Send a message to ${character.name}!`);
+    }
+
     const fetcher = useChatFetcher(character.name, thread);
     let lastDate: Date | null = null;
 
@@ -133,55 +143,89 @@ export function fullChatInterface(
         }
         return b.id - a.id;
     });
+
+    // isTyping state
+    const [isTyping, setIsTyping] = useState(false);
+    useEffect(() => {
+        const now = new Date();
+        const isAnyMessageTyping = messages.some(
+            (message) => message.timestamp > now && message.timestamp < addSeconds(now, 30)
+        );
+        setIsTyping(isAnyMessageTyping);
+    }, [messages]);
+
+    // isSpinning state
+    const [isSpinning, setIsSpinning] = useState(false);
+
+    // textareaValue state - Clears automatically when a message is sent
+    const [textareaValue, setTextareaValue] = useState("");
+    function hasTypeProperty(data: any): data is { type: string } {
+        return data && typeof data.type === "string";
+    }
+    useEffect(() => {
+        if (hasTypeProperty(fetcher.data) && fetcher.data.type === "post_message") {
+            setTextareaValue("");
+        }
+    }, [fetcher.data]);
+
     return (
         <div className="flex flex-col h-screen">
             <div className="overflow-auto flex flex-grow flex-col-reverse custom-scrollbar pt-20">
-                {processedMessages.length > 0 ? (
-                    processedMessages.map((message, index) => {
-                        const mb = messageBox(
-                            message,
-                            character.name,
-                            index,
-                            processedMessages.length,
-                            userPrefs,
-                            lastDate,
-                            fetcher
-                        );
-                        lastDate = message.timestamp;
-                        return mb;
-                    })
-                ) : (
-                    <div className="text-center text-text-muted-dark my-4">
-                        {status === 500 ? "Error getting messages from server" : `Send a message to ${character.name}!`}
-                    </div>
-                )}
+                {processedMessages.map((message, index) => {
+                    const scheduledMessage = message.timestamp > new Date();
+                    if (scheduledMessage && !userPrefs.debug) {
+                        return null;
+                    }
+                    const showDateHeader = !lastDate || !isSameDay(lastDate, message.timestamp);
+                    const isLastMessage = index === messages.length - 1;
+                    lastDate = message.timestamp;
+                    return (
+                        <MessageBox
+                            key={index}
+                            index={index}
+                            character={character.name}
+                            message={message}
+                            fetcher={fetcher}
+                            scheduledMessage={scheduledMessage}
+                            showDateHeader={showDateHeader}
+                            isLastMessage={isLastMessage}
+                        />
+                    );
+                })}
             </div>
-            {isTypingMessage(processedMessages, character.name)}
-            {getResponseImmediately(fetcher, character.name)}
-            {userInputMessageBox(fetcher, character.name)}
+            <IsTypingMessage isTyping={isTyping} character={character.name} />
+            <GetResponseImmediately fetcher={fetcher} character={character.name} isSpinning={isSpinning} />
+            <UserInputMessageBox
+                fetcher={fetcher}
+                character={character.name}
+                textareaValue={textareaValue}
+                setTextareaValue={setTextareaValue}
+            />
         </div>
     );
 }
 
-// Renders a single message in the chat interface
-function messageBox(
-    message: ProcessedMessage,
-    character: string,
-    index: number,
-    messagesLen: number,
-    userPrefs: Cookie,
-    lastDate: Date | null,
-    fetcher: any
-) {
-    const scheduledMessage = message.timestamp > new Date();
-    if (scheduledMessage && !userPrefs.debug) {
-        return null;
-    }
-    const showDateHeader = !lastDate || !isSameDay(lastDate, message.timestamp);
-
-    const isLastMessage = index === messagesLen - 1;
+// Renders a single message box
+interface MessageBoxProps {
+    index: number;
+    character: string;
+    message: Message;
+    fetcher: any;
+    scheduledMessage: boolean;
+    showDateHeader: boolean;
+    isLastMessage: boolean;
+}
+function MessageBox({
+    index,
+    character,
+    message,
+    fetcher,
+    scheduledMessage,
+    showDateHeader,
+    isLastMessage,
+}: MessageBoxProps) {
     return (
-        <div key={index}>
+        <div>
             {isLastMessage ? (
                 <div className="text-center text-text-muted-dark my-4">
                     {format(message.timestamp, "MMMM do, yyyy")}
@@ -219,16 +263,12 @@ function messageBox(
     );
 }
 
-// Renders the "Ophelia is typing..." message
-function isTypingMessage(messages: ProcessedMessage[], character: string) {
-    const [isTyping, setIsTyping] = useState(false);
-    useEffect(() => {
-        const now = new Date();
-        const isAnyMessageTyping = messages.some(
-            (message) => message.timestamp > now && message.timestamp < addSeconds(now, 30)
-        );
-        setIsTyping(isAnyMessageTyping);
-    }, [messages]);
+// Renders the "Character is typing..." message
+interface IsTypingMessageProps {
+    isTyping: boolean;
+    character: string;
+}
+function IsTypingMessage({ isTyping, character }: IsTypingMessageProps) {
     if (isTyping) {
         return (
             <div className="flex items-center ps-8">
@@ -239,9 +279,13 @@ function isTypingMessage(messages: ProcessedMessage[], character: string) {
     }
 }
 
-// Renders the "Get a response from Ophelia immediately" button
-function getResponseImmediately(fetcher: any, character: string) {
-    const [isSpinning, setIsSpinning] = useState(false);
+// Renders the "Get a response from Character immediately" button
+interface GetResponseImmediatelyProps {
+    fetcher: any;
+    character: string;
+    isSpinning: boolean;
+}
+function GetResponseImmediately({ fetcher, character, isSpinning }: GetResponseImmediatelyProps) {
     return (
         <fetcher.Form method="PATCH" className="py-4 ps-4" action={fetcher.formAction}>
             <button type="submit" className="pe-2 fa-lg text-character">
@@ -253,19 +297,14 @@ function getResponseImmediately(fetcher: any, character: string) {
 }
 
 // Renders the user input message box
-function userInputMessageBox(fetcher: any, character: string) {
+interface UserInputMessageBoxProps {
+    fetcher: any;
+    character: string;
+    textareaValue: string;
+    setTextareaValue: (value: string) => void;
+}
+function UserInputMessageBox({ fetcher, character, textareaValue, setTextareaValue }: UserInputMessageBoxProps) {
     const placeholder_message = `Send a message to ${character}!\nEnter to send. Alt-Enter for linebreak.`;
-    const [textareaValue, setTextareaValue] = useState("");
-
-    // Clear the textarea when a message is sent
-    function hasTypeProperty(data: any): data is { type: string } {
-        return data && typeof data.type === "string";
-    }
-    useEffect(() => {
-        if (hasTypeProperty(fetcher.data) && fetcher.data.type === "post_message") {
-            setTextareaValue("");
-        }
-    }, [fetcher.data]);
 
     return (
         <fetcher.Form method="POST" action={fetcher.formAction}>
@@ -313,6 +352,7 @@ function userInputMessageBox(fetcher: any, character: string) {
     );
 }
 
+// custom fetcher that always executes the /{character}/chat/{thread} action
 export function useChatFetcher(character: string, thread: string) {
     const fetcher = useFetcher<FetcherType>({
         key: `chat-${character}-${thread}`,
