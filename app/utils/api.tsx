@@ -1,11 +1,9 @@
 import axios from "axios";
-import dotenv from "dotenv";
 
-dotenv.config();
-const BASEURL = process.env.API_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 
 const api = axios.create({
-    baseURL: BASEURL,
+    baseURL: API_URL,
 });
 
 const endpoints = {
@@ -15,7 +13,7 @@ const endpoints = {
     characterByPath: (path: string) => `/characters/path/${path}`,
     characterEvents: (char_path: string) => `/events/${char_path}`,
     characterPosts: (char_path: string) => `/posts/${char_path}`,
-    imageURL: (image_path: string) => `${BASEURL}/images/${image_path}`,
+    imageURL: (image_path: string) => `${API_URL}/images/${image_path}`,
     newCharacter: () => `/characters/new`,
 };
 
