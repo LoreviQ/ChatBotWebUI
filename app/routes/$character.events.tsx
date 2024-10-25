@@ -22,9 +22,18 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
+    let eventData: Event[], eventStatus: number;
+    try {
+        const response = await api.get(endpoints.characterEvents(params.character!));
+        eventData = await response.data;
+        eventStatus = response.status;
+    } catch (error) {
+        eventData = [];
+        eventStatus = 500;
+    }
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};
-    return json({ events: { data: responseData, status: status }, userPrefs: { debug: cookie.debug } });
+    return json({ events: { data: eventData, status: eventStatus }, userPrefs: { debug: cookie.debug } });
 }
 
 export default function Events() {
