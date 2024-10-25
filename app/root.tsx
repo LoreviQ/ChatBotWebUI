@@ -10,13 +10,11 @@ import {
     useLoaderData,
     useFetcher,
     useSubmit,
-    useRevalidator,
-    useNavigate,
 } from "@remix-run/react";
 import type { Cookie } from "./utils/cookies";
 import { prefs } from "./utils/cookies";
 import { api, endpoints } from "./utils/api";
-import { Character } from "./routes/$character";
+import { Character } from "./routes/$character_.all";
 import { useState, useEffect } from "react";
 
 import "./tailwind.css";
@@ -54,13 +52,18 @@ export function ErrorBoundary() {
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
     let characterData: Character, characterStatus: number;
-    try {
-        const response = await api.get(endpoints.characterByPath(params.character!));
-        characterData = await response.data;
-        characterStatus = response.status;
-    } catch (error) {
+    if (params && params.character) {
+        try {
+            const response = await api.get(endpoints.characterByPath(params.character!));
+            characterData = await response.data;
+            characterStatus = response.status;
+        } catch (error) {
+            characterData = {} as Character;
+            characterStatus = 500;
+        }
+    } else {
         characterData = {} as Character;
-        characterStatus = 500;
+        characterStatus = 404;
     }
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};

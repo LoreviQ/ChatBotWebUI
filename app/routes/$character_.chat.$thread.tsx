@@ -10,7 +10,7 @@ import { characterErrMessage } from "../utils/errors";
 import { prefs } from "../utils/cookies";
 import { api, endpoints } from "../utils/api";
 import type { Cookie } from "../utils/cookies";
-import type { Character } from "./$character";
+import type { Character } from "./$character_.all";
 
 export type Message = {
     id: number;

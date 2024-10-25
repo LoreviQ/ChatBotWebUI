@@ -1,17 +1,17 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { prefs } from "./../utils/cookies";
-import { useLoaderData, useFetcher, useSubmit, useOutlet, useRevalidator, useNavigate } from "@remix-run/react";
+import { prefs } from "../utils/cookies";
+import { useLoaderData, useRevalidator } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
 import type { Event } from "./$character_.events";
 import { EventLog } from "./$character_.events";
 import type { Post } from "./$character_.posts";
 import { PostLog } from "./$character_.posts";
 import type { Message } from "./$character_.chat.$thread";
-import { fullChatInterface } from "./$character_.chat.$thread";
-import type { Cookie } from "./../utils/cookies";
+import { FullChat } from "./$character_.chat.$thread";
+import type { Cookie } from "../utils/cookies";
 import { api, endpoints } from "../utils/api";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export type Character = {
     id: number;
@@ -62,14 +62,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
     let messageData: Message[], messageStatus: number;
     // temporary, threads will be dynamic
-    let thread = "1";
-    if (params.character === "test") {
-        thread = "2";
-    } else if (params.character === "steve") {
-        thread = "3";
-    }
     try {
-        const response = await api.get(endpoints.threadMessages(thread));
+        const response = await api.get(endpoints.threadMessages("1"));
         messageData = await response.data;
         messageStatus = response.status;
     } catch (error) {
@@ -115,10 +109,11 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function Character() {
     const loaderData = useLoaderData<typeof loader>();
+    const character = loaderData.character.data as Character;
+    const events = loaderData.events.data as Event[];
+    const messages = loaderData.messages.data as Message[];
+    const posts = loaderData.posts.data as Post[];
     const userPrefs = loaderData.userPrefs as Cookie;
-    const outlet = useOutlet();
-
-    const [thread, setThread] = useState("1");
 
     // Revalidate the messages every second
     let { revalidate } = useRevalidator();
@@ -129,30 +124,34 @@ export default function Character() {
 
     return (
         <div>
-            {outlet ? (
-                <div className="container mx-auto max-w-2xl">{outlet}</div>
-            ) : (
-                <div className="flex">
-                    <div className="w-1/3">
-                        {EventLog(loaderData.events.data, userPrefs, true, loaderData.events.status)}
-                    </div>
-                    <div className="w-1/3">
-                        {fullChatInterface(
-                            loaderData.messages.data,
-                            userPrefs,
-                            loaderData.character.data,
-                            thread,
-                            loaderData.messages.status
-                        )}
-                    </div>
-                    <div className="w-1/3">
-                        {PostLog(loaderData.character.data, loaderData.posts.data, userPrefs, true, [
-                            loaderData.character.status,
-                            loaderData.posts.status,
-                        ])}
-                    </div>
+            <div className="flex">
+                <div className="w-1/3">
+                    <EventLog
+                        events={events}
+                        userPrefs={userPrefs}
+                        component={false}
+                        statuses={[loaderData.events.status]}
+                    />
                 </div>
-            )}
+                <div className="w-1/3">
+                    <FullChat
+                        character={character}
+                        messages={messages}
+                        userPrefs={userPrefs}
+                        thread={"1"}
+                        statuses={[loaderData.character.status, loaderData.messages.status]}
+                    />
+                </div>
+                <div className="w-1/3">
+                    <PostLog
+                        character={character}
+                        posts={posts}
+                        userPrefs={userPrefs}
+                        component={false}
+                        statuses={[loaderData.character.status, loaderData.posts.status]}
+                    />
+                </div>
+            </div>
         </div>
     );
 }
