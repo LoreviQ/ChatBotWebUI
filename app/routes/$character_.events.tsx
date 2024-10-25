@@ -5,14 +5,14 @@ import type { MetaFunction } from "@remix-run/node";
 import { format, parseISO, isSameDay, isToday, addDays } from "date-fns";
 import { useEffect } from "react";
 
-import type { Cookie } from "./../utils/cookies";
-import { prefs } from "./../utils/cookies";
+import type { Cookie } from "../utils/cookies";
+import { prefs } from "../utils/cookies";
 import { api, endpoints } from "../utils/api";
 import { characterErrMessage } from "../utils/errors";
 
 export type Event = {
     id: number;
-    timestamp: string;
+    timestamp: string | Date;
     type: string;
     content: string;
 };
@@ -38,6 +38,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 export default function Events() {
     const loaderData = useLoaderData<typeof loader>();
+    const events = loaderData.events.data as Event[];
     const userPrefs = loaderData.userPrefs as Cookie;
 
     // Revalidate the messages every second
@@ -47,10 +48,21 @@ export default function Events() {
         return () => clearInterval(id);
     }, [revalidate]);
 
-    return EventLog(loaderData.events.data, userPrefs, false, loaderData.events.status);
+    return (
+        <div className="container mx-auto max-w-2xl">
+            <EventLog events={events} userPrefs={userPrefs} component={false} status={loaderData.events.status} />
+        </div>
+    );
 }
 
-export function EventLog(events: Event[], userPrefs: Cookie, component: boolean, status: number) {
+interface EventLogProps {
+    events: Event[];
+    userPrefs: Cookie;
+    component: boolean;
+    status: number;
+}
+
+export function EventLog({ events, userPrefs, component, status }: EventLogProps) {
     // Guard clauses
     if (status === 500) {
         return characterErrMessage("Error getting events from the server");
@@ -89,29 +101,40 @@ export function EventLog(events: Event[], userPrefs: Cookie, component: boolean,
                     lastDate = event.timestamp;
                     const isLastEvent = index === processedEvents.length - 1;
                     return (
-                        <div key={index}>
-                            {isLastEvent ? (
-                                <div className="text-center text-text-muted-dark my-4">
-                                    {format(event.timestamp, "MMMM do, yyyy")}
-                                </div>
-                            ) : null}
-                            <div className="w-full items-center rounded-lg my-2 py-1 hover:bg-hover-dark flex justify-between">
-                                <div className="flex flex-col w-full">
-                                    <p className="px-4 text-xs text-text-muted-dark">
-                                        {`${event.type} - ${format(event.timestamp, "hh:mm a")}`}
-                                    </p>
-                                    <p className="py-1 px-4 break-words text-text-muted-dark">{event.content}</p>
-                                </div>
-                            </div>
-                            {showDateHeader && !isToday(event.timestamp) && index != 0 && (
-                                <div className="text-center text-text-muted-dark my-4">
-                                    {format(addDays(event.timestamp, 1), "MMMM do, yyyy")}
-                                </div>
-                            )}
-                        </div>
+                        <Event event={event} index={index} showDateHeader={showDateHeader} isLastEvent={isLastEvent} />
                     );
                 })}
             </div>
+        </div>
+    );
+}
+
+interface EventProps {
+    event: Event;
+    index: number;
+    showDateHeader: boolean;
+    isLastEvent: boolean;
+}
+
+function Event({ event, index, showDateHeader, isLastEvent }: EventProps) {
+    return (
+        <div key={index}>
+            {isLastEvent ? (
+                <div className="text-center text-text-muted-dark my-4">{format(event.timestamp, "MMMM do, yyyy")}</div>
+            ) : null}
+            <div className="w-full items-center rounded-lg my-2 py-1 hover:bg-hover-dark flex justify-between">
+                <div className="flex flex-col w-full">
+                    <p className="px-4 text-xs text-text-muted-dark">
+                        {`${event.type} - ${format(event.timestamp, "hh:mm a")}`}
+                    </p>
+                    <p className="py-1 px-4 break-words text-text-muted-dark">{event.content}</p>
+                </div>
+            </div>
+            {showDateHeader && !isToday(event.timestamp) && index != 0 && (
+                <div className="text-center text-text-muted-dark my-4">
+                    {format(addDays(event.timestamp, 1), "MMMM do, yyyy")}
+                </div>
+            )}
         </div>
     );
 }
