@@ -53,7 +53,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
 }
 
-export default function Events() {
+export default function Posts() {
     const loaderData = useLoaderData<typeof loader>();
     const userPrefs = loaderData.userPrefs as Cookie;
 
@@ -99,6 +99,7 @@ export function PostLog(
         }
         return b.id - a.id;
     });
+
     return (
         <div className="flex flex-col h-screen">
             <div

@@ -152,7 +152,7 @@ export function fullChatInterface(
                     })
                 ) : (
                     <div className="text-center text-text-muted-dark my-4">
-                        {status === 500 ? "Error getting messages from server" : `Send a message to ${character}!`}
+                        {status === 500 ? "Error getting messages from server" : `Send a message to ${character.name}!`}
                     </div>
                 )}
             </div>

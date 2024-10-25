@@ -65,6 +65,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     let thread = "1";
     if (params.character === "test") {
         thread = "2";
+    } else if (params.character === "steve") {
+        thread = "3";
     }
     try {
         const response = await api.get(endpoints.threadMessages(thread));
@@ -124,8 +126,9 @@ export default function Character() {
         }
         // temporary, threads will be dynamic
         if (loaderData.params.character === "test") {
-            console.log(loaderData.params.character);
             setThread("2");
+        } else if (loaderData.params.character === "steve") {
+            setThread("3");
         }
     }, [loaderData]);
     // Revalidate the messages every second
