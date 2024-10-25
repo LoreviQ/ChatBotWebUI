@@ -103,7 +103,13 @@ export function EventLog({ events, userPrefs, component, statuses }: EventLogPro
                     lastDate = event.timestamp;
                     const isLastEvent = index === processedEvents.length - 1;
                     return (
-                        <Event event={event} index={index} showDateHeader={showDateHeader} isLastEvent={isLastEvent} />
+                        <Event
+                            key={index}
+                            event={event}
+                            index={index}
+                            showDateHeader={showDateHeader}
+                            isLastEvent={isLastEvent}
+                        />
                     );
                 })}
             </div>
@@ -111,16 +117,16 @@ export function EventLog({ events, userPrefs, component, statuses }: EventLogPro
     );
 }
 
+// Renders a single event in the event log
 interface EventProps {
     event: Event;
     index: number;
     showDateHeader: boolean;
     isLastEvent: boolean;
 }
-
 function Event({ event, index, showDateHeader, isLastEvent }: EventProps) {
     return (
-        <div key={index}>
+        <div>
             {isLastEvent ? (
                 <div className="text-center text-text-muted-dark my-4">{format(event.timestamp, "MMMM do, yyyy")}</div>
             ) : null}

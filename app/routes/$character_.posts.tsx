@@ -120,11 +120,11 @@ export function PostLog({ character, posts, userPrefs, component, statuses }: Po
                     }
                     if (post.image_post) {
                         if (post.image_path) {
-                            return <ImagePost post={post} character={character} index={index} />;
+                            return <ImagePost key={index} post={post} character={character} index={index} />;
                         }
                         return null;
                     }
-                    return <TextPost post={post} character={character} index={index} />;
+                    return <TextPost key={index} post={post} character={character} index={index} />;
                 })}
             </div>
         </div>
@@ -137,9 +137,10 @@ interface postProps {
     index: number;
 }
 
+// Renders an image post
 function ImagePost({ post, character, index }: postProps) {
     return (
-        <div key={index} className="px-4">
+        <div className="px-4">
             <div className="flex pb-4  w-full">
                 <img
                     className="rounded-full w-20 me-8"
@@ -163,6 +164,7 @@ function ImagePost({ post, character, index }: postProps) {
     );
 }
 
+// Renders a text post
 function TextPost({ post, character, index }: postProps) {
     return (
         <div key={index} className="px-4">

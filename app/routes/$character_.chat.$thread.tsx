@@ -107,6 +107,7 @@ export default function Chat() {
     );
 }
 
+// Renders the entire chat interface
 interface FullChatProps {
     character: Character;
     messages: Message[];
@@ -114,7 +115,6 @@ interface FullChatProps {
     thread: string;
     statuses: number[];
 }
-
 export function FullChat({ character, messages, userPrefs, thread, statuses }: FullChatProps) {
     // Guard clauses
     statuses.map((status) => {
@@ -181,6 +181,7 @@ export function FullChat({ character, messages, userPrefs, thread, statuses }: F
                     lastDate = message.timestamp;
                     return (
                         <MessageBox
+                            key={index}
                             index={index}
                             character={character.name}
                             message={message}
@@ -224,7 +225,7 @@ function MessageBox({
     isLastMessage,
 }: MessageBoxProps) {
     return (
-        <div key={index}>
+        <div>
             {isLastMessage ? (
                 <div className="text-center text-text-muted-dark my-4">
                     {format(message.timestamp, "MMMM do, yyyy")}
