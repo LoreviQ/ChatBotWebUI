@@ -72,8 +72,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 export function Layout({ children }: { children: React.ReactNode }) {
     const loaderData = useLoaderData<typeof loader>();
-    const userPrefs = loaderData.userPrefs as Cookie;
     const character = loaderData.character.data as Character;
+    const userPrefs = loaderData.userPrefs as Cookie;
 
     // Set state based on character data
     const [primaryColour, setPrimaryColour] = useState("#FFFFFF");

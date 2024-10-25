@@ -5,8 +5,8 @@ import { useLoaderData, useFetcher, useSubmit, useOutlet, useRevalidator, useNav
 import type { MetaFunction } from "@remix-run/node";
 import type { Event } from "./$character.events";
 import { EventLog } from "./$character.events";
-import type { Post } from "./$character.posts";
-import { PostLog } from "./$character.posts";
+import type { Post } from "./$character_.posts";
+import { PostLog } from "./$character_.posts";
 import type { Message } from "./$character.chat.$thread";
 import { fullChatInterface } from "./$character.chat.$thread";
 import type { Cookie } from "./../utils/cookies";

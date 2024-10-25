@@ -5,8 +5,8 @@ import type { MetaFunction } from "@remix-run/node";
 import { parseISO, formatDistanceToNow } from "date-fns";
 import { useEffect } from "react";
 
-import type { Cookie } from "./../utils/cookies";
-import { prefs } from "./../utils/cookies";
+import type { Cookie } from "../utils/cookies";
+import { prefs } from "../utils/cookies";
 import { api, endpoints } from "../utils/api";
 import type { Character } from "./$character";
 import { characterErrMessage } from "../utils/errors";
@@ -55,7 +55,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 export default function Posts() {
     const loaderData = useLoaderData<typeof loader>();
+    const character = loaderData.character.data as Character;
+    const posts = loaderData.posts.data as Post[];
     const userPrefs = loaderData.userPrefs as Cookie;
+    const statuses = [loaderData.character.status, loaderData.posts.status];
 
     // Revalidate the messages every second
     let { revalidate } = useRevalidator();
@@ -63,19 +66,22 @@ export default function Posts() {
         let id = setInterval(revalidate, 1000);
         return () => clearInterval(id);
     }, [revalidate]);
-    return PostLog(loaderData.character.data, loaderData.posts.data, userPrefs, false, [
-        loaderData.character.status,
-        loaderData.posts.status,
-    ]);
+    return (
+        <div className="container mx-auto max-w-2xl">
+            <PostLog character={character} posts={posts} userPrefs={userPrefs} component={false} statuses={statuses} />
+        </div>
+    );
 }
 
-export function PostLog(
-    character: Character,
-    posts: Post[],
-    userPrefs: Cookie,
-    component: boolean,
-    statuses: number[]
-) {
+interface PostLogProps {
+    character: Character;
+    posts: Post[];
+    userPrefs: Cookie;
+    component: boolean;
+    statuses: number[];
+}
+
+export function PostLog({ character, posts, userPrefs, component, statuses }: PostLogProps) {
     // Guard clauses
     statuses.map((status) => {
         if (status === 500) {
@@ -125,13 +131,13 @@ export function PostLog(
     );
 }
 
-interface postParams {
+interface postProps {
     post: Post;
     character: Character;
     index: number;
 }
 
-function ImagePost({ post, character, index }: postParams) {
+function ImagePost({ post, character, index }: postProps) {
     return (
         <div key={index} className="px-4">
             <div className="flex pb-4  w-full">
@@ -157,7 +163,7 @@ function ImagePost({ post, character, index }: postParams) {
     );
 }
 
-function TextPost({ post, character, index }: postParams) {
+function TextPost({ post, character, index }: postProps) {
     return (
         <div key={index} className="px-4">
             <div className="flex pb-4  w-full">
