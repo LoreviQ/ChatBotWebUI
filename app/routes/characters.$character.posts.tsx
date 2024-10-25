@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import type { Cookie } from "../utils/cookies";
 import { prefs } from "../utils/cookies";
 import { api, endpoints } from "../utils/api";
-import type { Character } from "./$character_.all";
+import type { Character } from "./characters.$character.all";
 import { characterErrMessage } from "../utils/errors";
 
 export type Post = {
@@ -187,6 +187,7 @@ function TextPost({ post, character, index }: postProps) {
     );
 }
 
+// Custom formatting for post content
 function formatPost(text: string) {
     text = text.replace(/(#\w+)/g, "<strong>$1</strong>");
     text = text.replace(/^"|"$/g, "");

@@ -14,7 +14,7 @@ import {
 import type { Cookie } from "./utils/cookies";
 import { prefs } from "./utils/cookies";
 import { api, endpoints } from "./utils/api";
-import { Character } from "./routes/$character_.all";
+import { Character } from "./routes/characters.$character.all";
 import { useState, useEffect } from "react";
 
 import "./tailwind.css";
@@ -115,11 +115,11 @@ export default function App() {
     );
 }
 
+// Rendrs the header of the page
 interface headerProps {
     title: string;
     userPrefs: Cookie;
 }
-
 function Header({ title, userPrefs }: headerProps) {
     const fetcher = useFetcher();
     const submit = useSubmit();
