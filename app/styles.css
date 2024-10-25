@@ -17,8 +17,13 @@
     border-radius: 4px;
 }
 
-div { 
-    padding-top:0 !important;
+.hidden-scrollbar {
+    -ms-overflow-style: none; 
+    scrollbar-width: none;  
+}
+
+.hidden-scrollbar::-webkit-scrollbar {
+    display: none; 
 }
 
 @font-face {
@@ -37,7 +42,7 @@ div {
 
 @layer base {
   .font-outline {
-    -webkit-text-stroke: 1px theme("colors.primary-dark");
+    -webkit-text-stroke: 1px theme("colors.character");
   }
 }
 
@@ -48,8 +53,8 @@ div {
     animation: l5 1s infinite linear alternate;
   }
   @keyframes l5 {
-      0%  {box-shadow: 15px 0 theme('colors.bg-dark'), -15px 0 theme("colors.primary-dark");background: theme('colors.bg-dark') }
-      33% {box-shadow: 15px 0 theme('colors.bg-dark'), -15px 0 theme("colors.primary-dark");background: theme("colors.primary-dark")}
-      66% {box-shadow: 15px 0 theme("colors.primary-dark"),-15px 0 theme('colors.bg-dark'); background: theme("colors.primary-dark")}
-      100%{box-shadow: 15px 0 theme("colors.primary-dark"),-15px 0 theme('colors.bg-dark'); background: theme('colors.bg-dark') }
+      0%  {box-shadow: 15px 0 theme('colors.bg-dark'), -15px 0 theme("colors.character");background: theme('colors.bg-dark') }
+      33% {box-shadow: 15px 0 theme('colors.bg-dark'), -15px 0 theme("colors.character");background: theme("colors.character")}
+      66% {box-shadow: 15px 0 theme("colors.character"),-15px 0 theme('colors.bg-dark'); background: theme("colors.character")}
+      100%{box-shadow: 15px 0 theme("colors.character"),-15px 0 theme('colors.bg-dark'); background: theme('colors.bg-dark') }
   }
