@@ -28,7 +28,7 @@ export const meta: MetaFunction = () => {
 export async function loader({ params, request }: LoaderFunctionArgs) {
     let characterData: Character, characterStatus: number;
     try {
-        const response = await api.get(endpoints.characterByPath(params.character!));
+        const response = await api.get(endpoints.character(params.character!));
         characterData = await response.data;
         characterStatus = response.status;
     } catch (error) {
@@ -72,7 +72,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
                 response = await api.delete(endpoints.message(message_id));
                 return json({ type: "delete_messages", status: response.status });
             case "PATCH":
-                response = await api.get(endpoints.newMessage(params.thread!));
+                response = await api.get(endpoints.newThreadMessage(params.thread!));
                 return json({ type: "get_messages", status: response.status });
         }
     } catch (error) {

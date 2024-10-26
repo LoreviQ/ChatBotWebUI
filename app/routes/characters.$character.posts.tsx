@@ -28,7 +28,7 @@ export const meta: MetaFunction = () => {
 export async function loader({ params, request }: LoaderFunctionArgs) {
     let characterData: Character, characterStatus: number;
     try {
-        const response = await api.get(endpoints.characterByPath(params.character!));
+        const response = await api.get(endpoints.character(params.character!));
         characterData = await response.data;
         characterStatus = response.status;
     } catch (error) {

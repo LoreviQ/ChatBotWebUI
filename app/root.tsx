@@ -57,7 +57,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     let characterData: Character, characterStatus: number;
     if (params?.character) {
         try {
-            const response = await api.get(endpoints.characterByPath(params.character!));
+            const response = await api.get(endpoints.character(params.character!));
             characterData = await response.data;
             characterStatus = response.status;
         } catch (error) {
@@ -70,7 +70,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};
-    console.log(cookie);
     let loggedIn = !!cookie.jwt && !isJwtExpired(cookie.jwt);
     return json({
         character: { data: characterData, status: characterStatus },

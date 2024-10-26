@@ -3,7 +3,6 @@ import { prefs } from "./../utils/cookies";
 import { json } from "@remix-run/node";
 
 export async function action({ request }: ActionFunctionArgs) {
-    console.log("logout action");
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};
     cookie.jwt = "";
