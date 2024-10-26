@@ -107,7 +107,7 @@ export async function action({ request }: ActionFunctionArgs) {
     });
 }
 
-export default function Character() {
+export default function CharacterAll() {
     const loaderData = useLoaderData<typeof loader>();
     const character = loaderData.character.data as Character;
     const events = loaderData.events.data as Event[];

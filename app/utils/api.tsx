@@ -15,6 +15,7 @@ const endpoints = {
     characterPosts: (char_path: string) => `/posts/${char_path}`,
     imageURL: (image_path: string) => `${API_URL}/images/${image_path}`,
     newCharacter: () => `/characters/new`,
+    login: () => `/login`,
 };
 
 export { endpoints, api };

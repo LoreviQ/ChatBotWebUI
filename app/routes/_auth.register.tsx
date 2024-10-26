@@ -16,7 +16,7 @@ export default function Login() {
         <div>
             <h1 className="flex pb-2 justify-center">Create an account</h1>
             <hr />
-            <Form action="/login" method="POST">
+            <Form action="/register" method="POST">
                 <label className="py-2 text-text-muted-dark text-sm flex items-center">Username</label>
                 <input
                     type="text"
