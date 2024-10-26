@@ -1,5 +1,5 @@
 import { json } from "@remix-run/node";
-import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 import {
     Links,
     Meta,
@@ -73,6 +73,22 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     return json({
         character: { data: characterData, status: characterStatus },
         userPrefs: { debug: cookie.debug },
+    });
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+    const cookieHeader = request.headers.get("Cookie");
+    const cookie = (await prefs.parse(cookieHeader)) || {};
+    const formData = await request.formData();
+    let debug: boolean = false;
+    if (formData.has("debug")) {
+        debug = true;
+    }
+    cookie.debug = debug;
+    return json(debug, {
+        headers: {
+            "Set-Cookie": await prefs.serialize(cookie),
+        },
     });
 }
 

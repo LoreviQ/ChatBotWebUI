@@ -1,4 +1,4 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { prefs } from "../utils/cookies";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
@@ -88,22 +88,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         posts: { data: postData, status: postStatus },
         userPrefs: { debug: cookie.debug },
         params: params,
-    });
-}
-
-export async function action({ request }: ActionFunctionArgs) {
-    const cookieHeader = request.headers.get("Cookie");
-    const cookie = (await prefs.parse(cookieHeader)) || {};
-    const formData = await request.formData();
-    let debug: boolean = false;
-    if (formData.has("debug")) {
-        debug = true;
-    }
-    cookie.debug = debug;
-    return json(debug, {
-        headers: {
-            "Set-Cookie": await prefs.serialize(cookie),
-        },
     });
 }
 
