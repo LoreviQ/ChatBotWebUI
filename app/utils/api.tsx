@@ -16,6 +16,7 @@ const endpoints = {
     imageURL: (image_path: string) => `${API_URL}/images/${image_path}`,
     newCharacter: () => `/characters/new`,
     login: () => `/login`,
+    register: () => `/users/new`,
 };
 
 export { endpoints, api };

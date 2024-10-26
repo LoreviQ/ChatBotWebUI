@@ -1,13 +1,41 @@
 import { json } from "@remix-run/node";
-import type { LoaderFunctionArgs } from "@remix-run/node";
-import { Form, Link } from "@remix-run/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { Form, redirect } from "@remix-run/react";
 import { prefs } from "./../utils/cookies";
+import { api, endpoints } from "./../utils/api";
 
 export async function loader({ request }: LoaderFunctionArgs) {
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};
     return json({
         userPrefs: { debug: cookie.debug },
+    });
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+    const formData = await request.formData();
+    const password = formData.get("password");
+    const repeatPassword = formData.get("password-reenter");
+    if (password !== repeatPassword) {
+        return json({ error: "Passwords do not match" }, { status: 400 });
+    }
+    const payload = {
+        username: formData.get("username"),
+        password: password,
+        email: formData.get("email"),
+    };
+    const response = await api.post(endpoints.register(), payload);
+    if (response.status != 200) {
+        return json({ error: "Registration failed" }, { status: response.status });
+    }
+    // set token in cookie
+    const cookieHeader = request.headers.get("Cookie");
+    const cookie = (await prefs.parse(cookieHeader)) || {};
+    cookie.jwt = response.data;
+    return redirect("/", {
+        headers: {
+            "Set-Cookie": await prefs.serialize(cookie),
+        },
     });
 }
 
