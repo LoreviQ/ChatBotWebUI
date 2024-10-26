@@ -14,7 +14,7 @@ import {
     Link,
 } from "@remix-run/react";
 import type { Cookie } from "./utils/cookies";
-import { prefs } from "./utils/cookies";
+import { prefs, isJwtExpired } from "./utils/cookies";
 import { api, endpoints } from "./utils/api";
 import { Character } from "./routes/characters.$character.all";
 import { useState, useEffect } from "react";
@@ -70,9 +70,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};
+    console.log(cookie);
+    let loggedIn = !!cookie.jwt && !isJwtExpired(cookie.jwt);
     return json({
         character: { data: characterData, status: characterStatus },
         userPrefs: { debug: cookie.debug },
+        auth: { loggedIn: loggedIn },
     });
 }
 
@@ -98,7 +101,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
     const [title, setTitle] = useState("Echoes AI");
     const [titleLink, setTitleLink] = useState("/");
     const [userPrefs, setUserPrefs] = useState({ debug: false } as Cookie);
-
     // Modify state based on character data
     const loaderData = useRouteLoaderData<typeof loader>("root");
     useEffect(() => {
@@ -133,7 +135,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     { "--color-primary": primaryColour, "--color-contrast": contrastingColour } as React.CSSProperties
                 }
             >
-                <Header title={title} userPrefs={userPrefs} titleLink={titleLink} />
+                <Header
+                    title={title}
+                    userPrefs={userPrefs}
+                    titleLink={titleLink}
+                    loggedIn={!!loaderData?.auth.loggedIn}
+                />
                 {children}
                 <ScrollRestoration />
                 <Scripts />
@@ -155,8 +162,9 @@ interface headerProps {
     title: string;
     userPrefs: Cookie;
     titleLink: string;
+    loggedIn: boolean;
 }
-function Header({ title, userPrefs, titleLink }: headerProps) {
+function Header({ title, userPrefs, titleLink, loggedIn }: headerProps) {
     const fetcher = useFetcher();
     const submit = useSubmit();
     return (
@@ -197,15 +205,27 @@ function Header({ title, userPrefs, titleLink }: headerProps) {
                             <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Debug</span>
                         </label>
                     </fetcher.Form>
-                    <Link to="/login">
-                        <button
-                            className="py-2 px-4 border rounded font-semibold
+                    {loggedIn ? (
+                        <fetcher.Form method="post" action="/logout">
+                            <button
+                                className="py-2 px-4 border rounded font-semibold
+                    bg-transparent  text-character border-character
+                    hover:bg-character hover:text-contrast hover:border-transparent"
+                            >
+                                Logout
+                            </button>
+                        </fetcher.Form>
+                    ) : (
+                        <Link to="/login">
+                            <button
+                                className="py-2 px-4 border rounded font-semibold
                         bg-transparent  text-character border-character
                         hover:bg-character hover:text-contrast hover:border-transparent"
-                        >
-                            Login
-                        </button>
-                    </Link>
+                            >
+                                Login
+                            </button>
+                        </Link>
+                    )}
                 </div>
                 <Link
                     to={titleLink}
