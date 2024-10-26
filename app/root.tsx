@@ -7,7 +7,8 @@ import {
     Scripts,
     ScrollRestoration,
     useRouteError,
-    useLoaderData,
+    isRouteErrorResponse,
+    useRouteLoaderData,
     useFetcher,
     useSubmit,
     Link,
@@ -34,21 +35,21 @@ export const links: LinksFunction = () => [
         href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
     },
 ];
+
 export function ErrorBoundary() {
     const error = useRouteError();
-    console.error(error);
     return (
-        <html>
-            <head>
-                <title>Oh no!</title>
-                <Meta />
-                <Links />
-            </head>
-            <body>
-                Error loading the page. Check the console for more information.
-                <Scripts />
-            </body>
-        </html>
+        <div className="flex w-full h-screen items-center justify-center">
+            <div className="p-10 bg-contrast border-2 text-character border-character rounded-lg">
+                <h1>
+                    {isRouteErrorResponse(error)
+                        ? `${error.status} ${error.statusText}`
+                        : error instanceof Error
+                        ? error.message
+                        : "Unknown Error"}
+                </h1>
+            </div>
+        </div>
     );
 }
 
@@ -76,23 +77,29 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-    const loaderData = useLoaderData<typeof loader>();
-    const character = loaderData.character.data as Character;
-    const userPrefs = loaderData.userPrefs as Cookie;
-
-    // Set state based on character data
     const [primaryColour, setPrimaryColour] = useState("#FFFFFF");
     const [contrastingColour, setContrastingColour] = useState("#000000");
     const [title, setTitle] = useState("Echoes AI");
+    const [userPrefs, setUserPrefs] = useState({ debug: false } as Cookie);
+
+    // Modify state based on character data
+    const loaderData = useRouteLoaderData<typeof loader>("root");
     useEffect(() => {
-        if (character.favorite_colour) {
-            setPrimaryColour(character.favorite_colour);
-            setContrastingColour(getConstrastingColour(character.favorite_colour));
+        if (!loaderData) {
+            return;
         }
-        if (character.name) {
-            setTitle(character.name);
+        if (loaderData.character.data.favorite_colour) {
+            setPrimaryColour(loaderData.character.data.favorite_colour);
+            setContrastingColour(getConstrastingColour(loaderData.character.data.favorite_colour));
         }
-    }, [character]);
+        if (loaderData.character.data.name) {
+            setTitle(loaderData.character.data.name);
+        }
+        if (loaderData.userPrefs) {
+            const prefs = loaderData.userPrefs as Cookie;
+            setUserPrefs(prefs);
+        }
+    }, [loaderData]);
     return (
         <html lang="en">
             <head>
