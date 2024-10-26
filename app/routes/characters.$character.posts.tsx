@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import type { Cookie } from "../utils/cookies";
 import { prefs } from "../utils/cookies";
 import { api, endpoints } from "../utils/api";
-import type { Character } from "./characters.$character.all";
+import type { Character } from "./characters";
 import { characterErrMessage } from "../utils/errors";
 
 export type Post = {

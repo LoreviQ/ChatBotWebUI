@@ -12,30 +12,7 @@ import { FullChat } from "./characters.$character.chat.$thread";
 import type { Cookie } from "../utils/cookies";
 import { api, endpoints } from "../utils/api";
 import { useEffect } from "react";
-
-export type Character = {
-    id: number;
-    name: string;
-    path_name: string;
-    description: string;
-    age: number;
-    height: string;
-    personality: string;
-    appearance: string;
-    loves: string;
-    hates: string;
-    details: string;
-    scenario: string;
-    important: string;
-    initial_message: string;
-    favorite_colour: string;
-    phases: boolean;
-    img_gen: boolean;
-    model: string;
-    global_positive: string;
-    global_negative: string;
-    profile_path: string;
-};
+import type { Character } from "./characters";
 
 export const meta: MetaFunction = () => {
     return [{ title: "Ophelia" }, { name: "description", content: "All about Ophelia" }];
@@ -99,7 +76,7 @@ export default function CharacterAll() {
     const posts = loaderData.posts.data as Post[];
     const userPrefs = loaderData.userPrefs as Cookie;
 
-    // Revalidate the messages every 10 seconds
+    // Revalidate the data every 10 seconds
     let { revalidate } = useRevalidator();
     useEffect(() => {
         let id = setInterval(revalidate, 10000);
