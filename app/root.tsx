@@ -80,6 +80,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     const [primaryColour, setPrimaryColour] = useState("#FFFFFF");
     const [contrastingColour, setContrastingColour] = useState("#000000");
     const [title, setTitle] = useState("Echoes AI");
+    const [titleLink, setTitleLink] = useState("/");
     const [userPrefs, setUserPrefs] = useState({ debug: false } as Cookie);
 
     // Modify state based on character data
@@ -94,6 +95,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         }
         if (loaderData.character.data.name) {
             setTitle(loaderData.character.data.name);
+        }
+        if (loaderData.character.data.path_name) {
+            setTitleLink(`/characters/${loaderData.character.data.path_name}`);
         }
         if (loaderData.userPrefs) {
             const prefs = loaderData.userPrefs as Cookie;
@@ -113,7 +117,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     { "--color-primary": primaryColour, "--color-contrast": contrastingColour } as React.CSSProperties
                 }
             >
-                <Header title={title} userPrefs={userPrefs} />
+                <Header title={title} userPrefs={userPrefs} titleLink={titleLink} />
                 {children}
                 <ScrollRestoration />
                 <Scripts />
@@ -134,8 +138,9 @@ export default function App() {
 interface headerProps {
     title: string;
     userPrefs: Cookie;
+    titleLink: string;
 }
-function Header({ title, userPrefs }: headerProps) {
+function Header({ title, userPrefs, titleLink }: headerProps) {
     const fetcher = useFetcher();
     const submit = useSubmit();
     return (
@@ -186,13 +191,14 @@ function Header({ title, userPrefs }: headerProps) {
                         </button>
                     </Link>
                 </div>
-
-                <button
+                <Link
+                    to={titleLink}
                     className="absolute z-40 left-1/2 transform -translate-x-1/2 text-5xl font-ophelia font-outline"
-                    type="button"
                 >
-                    {title}
-                </button>
+                    <button className="" type="button">
+                        {title}
+                    </button>
+                </Link>
             </div>
         </div>
     );
