@@ -215,13 +215,13 @@ function Header({ title, userPrefs, titleLink, loggedIn, showBackButton }: heade
                                 />
                                 <div
                                     className="
-                                relative w-11 h-6 rounded-full
-                                bg-hover-dark
-                                peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full  peer-checked:bg-character
-                                after:content-[''] after:absolute after:top-[2px] after:start-[2px] 
-                                after:border after:border-hover-dark peer-checked:after:border-white after:bg-white 
-                                after:rounded-full after:h-5 after:w-5 after:transition-all  
-                            "
+                                        relative w-11 h-6 rounded-full
+                                        bg-hover-dark
+                                        peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full  peer-checked:bg-character
+                                        after:content-[''] after:absolute after:top-[2px] after:start-[2px] 
+                                        after:border after:border-hover-dark peer-checked:after:border-white after:bg-white 
+                                        after:rounded-full after:h-5 after:w-5 after:transition-all  
+                                    "
                                 ></div>
                                 <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Debug</span>
                             </label>
@@ -231,8 +231,9 @@ function Header({ title, userPrefs, titleLink, loggedIn, showBackButton }: heade
                         <fetcher.Form method="post" action="/logout">
                             <button
                                 className="py-2 px-4 border rounded font-semibold
-                    bg-transparent  text-character border-character
-                    hover:bg-character hover:text-contrast hover:border-transparent"
+                                    bg-transparent  text-character border-character
+                                    hover:bg-character hover:text-contrast hover:border-transparent
+                                "
                             >
                                 Logout
                             </button>
@@ -241,8 +242,9 @@ function Header({ title, userPrefs, titleLink, loggedIn, showBackButton }: heade
                         <Link to="/login">
                             <button
                                 className="py-2 px-4 border rounded font-semibold
-                        bg-transparent  text-character border-character
-                        hover:bg-character hover:text-contrast hover:border-transparent"
+                                    bg-transparent  text-character border-character
+                                    hover:bg-character hover:text-contrast hover:border-transparent
+                                "
                             >
                                 Login
                             </button>
