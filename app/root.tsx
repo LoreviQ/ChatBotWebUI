@@ -19,6 +19,8 @@ import { api, endpoints } from "./utils/api";
 import { Character } from "./routes/characters";
 import { useState, useEffect } from "react";
 import { getConstrastingColour } from "./utils/colours";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
 import "./tailwind.css";
 import "./styles.css";
@@ -75,6 +77,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         character: { data: characterData, status: characterStatus },
         userPrefs: { debug: cookie.debug },
         auth: { loggedIn: loggedIn },
+        params: params,
     });
 }
 
@@ -100,6 +103,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     const [title, setTitle] = useState("Echoes AI");
     const [titleLink, setTitleLink] = useState("/");
     const [userPrefs, setUserPrefs] = useState({ debug: false } as Cookie);
+    const [showBackButton, setShowBackButton] = useState(false);
     // Modify state based on character data
     const loaderData = useRouteLoaderData<typeof loader>("root");
     useEffect(() => {
@@ -120,6 +124,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
             const prefs = loaderData.userPrefs as Cookie;
             setUserPrefs(prefs);
         }
+        if (loaderData?.params?.character) {
+            console.log(loaderData?.params?.character);
+            setShowBackButton(true);
+        }
     }, [loaderData]);
     return (
         <html lang="en">
@@ -139,6 +147,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     userPrefs={userPrefs}
                     titleLink={titleLink}
                     loggedIn={!!loaderData?.auth.loggedIn}
+                    showBackButton={showBackButton}
                 />
                 {children}
                 <ScrollRestoration />
@@ -162,8 +171,9 @@ interface headerProps {
     userPrefs: Cookie;
     titleLink: string;
     loggedIn: boolean;
+    showBackButton: boolean;
 }
-function Header({ title, userPrefs, titleLink, loggedIn }: headerProps) {
+function Header({ title, userPrefs, titleLink, loggedIn, showBackButton }: headerProps) {
     const fetcher = useFetcher();
     const submit = useSubmit();
     return (
@@ -177,22 +187,34 @@ function Header({ title, userPrefs, titleLink, loggedIn }: headerProps) {
                 "
             >
                 <div className="p-4 flex justify-between w-full">
-                    <fetcher.Form
-                        className="flex"
-                        onChange={(e) => {
-                            submit(e.currentTarget, { method: "post", navigate: false });
-                        }}
-                    >
-                        <label className="items-center inline-flex cursor-pointer">
-                            <input
-                                name="debug"
-                                type="checkbox"
-                                value={1}
-                                className="sr-only peer"
-                                defaultChecked={userPrefs.debug}
-                            />
-                            <div
-                                className="
+                    <div className="flex">
+                        {showBackButton && (
+                            <Link to="/characters" className="pe-4">
+                                <button
+                                    className="py-2 px-4  rounded font-semibold
+                            bg-transparent  text-character 
+                            hover:bg-character hover:text-contrast "
+                                >
+                                    <FontAwesomeIcon icon={faArrowLeft} />
+                                </button>
+                            </Link>
+                        )}
+                        <fetcher.Form
+                            className="flex"
+                            onChange={(e) => {
+                                submit(e.currentTarget, { method: "post", navigate: false });
+                            }}
+                        >
+                            <label className="items-center inline-flex cursor-pointer">
+                                <input
+                                    name="debug"
+                                    type="checkbox"
+                                    value={1}
+                                    className="sr-only peer"
+                                    defaultChecked={userPrefs.debug}
+                                />
+                                <div
+                                    className="
                                 relative w-11 h-6 rounded-full
                                 bg-hover-dark
                                 peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full  peer-checked:bg-character
@@ -200,10 +222,11 @@ function Header({ title, userPrefs, titleLink, loggedIn }: headerProps) {
                                 after:border after:border-hover-dark peer-checked:after:border-white after:bg-white 
                                 after:rounded-full after:h-5 after:w-5 after:transition-all  
                             "
-                            ></div>
-                            <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Debug</span>
-                        </label>
-                    </fetcher.Form>
+                                ></div>
+                                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Debug</span>
+                            </label>
+                        </fetcher.Form>
+                    </div>
                     {loggedIn ? (
                         <fetcher.Form method="post" action="/logout">
                             <button
