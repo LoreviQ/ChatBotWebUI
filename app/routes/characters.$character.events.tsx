@@ -31,6 +31,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         eventData = [];
         eventStatus = 500;
     }
+    console.log(eventData);
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};
     return json({ events: { data: eventData, status: eventStatus }, userPrefs: { debug: cookie.debug } });

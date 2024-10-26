@@ -13,7 +13,7 @@ const endpoints = {
     message: (message_id: string) => `${API_VERSION}/messages/${message_id}`,
     characterEvents: (char_path: string, query = "") => `${API_VERSION}/characters/${char_path}/events?${query}`,
     characterPosts: (char_path: string, query = "") => `${API_VERSION}/characters/${char_path}/posts?${query}`,
-    imageURL: (image_path: string) => `${API_URL}/images/${image_path}`,
+    imageURL: (image_path: string) => `${API_URL}/${API_VERSION}/images/${image_path}`,
     characters: (query = "") => `${API_VERSION}/characters?${query}`,
     character: (char_path: string) => `${API_VERSION}/characters/${char_path}`,
     login: () => `${API_VERSION}/login`,
