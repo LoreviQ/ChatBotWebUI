@@ -48,6 +48,9 @@ function CharacterDetails({ character }: CharacterDetailsProps) {
                 <Link to={`/characters/${character.path_name}/events`}>
                     <CharacterOutlineButton text="Events!" />
                 </Link>
+                <Link to={`/characters/${character.path_name}/all`}>
+                    <CharacterOutlineButton text="All?" />
+                </Link>
             </div>
             <div className="flex items-center">
                 <img className="p-5" src={endpoints.imageURL(character.profile_path)} />
