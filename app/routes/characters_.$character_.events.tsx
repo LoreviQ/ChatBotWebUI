@@ -41,10 +41,10 @@ export default function Events() {
     const events = loaderData.events.data as Event[];
     const userPrefs = loaderData.userPrefs as Cookie;
 
-    // Revalidate the messages every 10 seconds
+    // Revalidate the events every minute
     let { revalidate } = useRevalidator();
     useEffect(() => {
-        let id = setInterval(revalidate, 10000);
+        let id = setInterval(revalidate, 60000);
         return () => clearInterval(id);
     }, [revalidate]);
 

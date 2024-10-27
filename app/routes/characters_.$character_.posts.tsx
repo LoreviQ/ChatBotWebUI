@@ -60,10 +60,10 @@ export default function Posts() {
     const userPrefs = loaderData.userPrefs as Cookie;
     const statuses = [loaderData.character.status, loaderData.posts.status];
 
-    // Revalidate the messages every 10 seconds
+    // Revalidate the posts every minute
     let { revalidate } = useRevalidator();
     useEffect(() => {
-        let id = setInterval(revalidate, 10000);
+        let id = setInterval(revalidate, 60000);
         return () => clearInterval(id);
     }, [revalidate]);
     return (
