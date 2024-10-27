@@ -1,7 +1,6 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
-import type { MetaFunction } from "@remix-run/node";
 import { format, parseISO, isSameDay, isToday, addDays } from "date-fns";
 import { useEffect } from "react";
 

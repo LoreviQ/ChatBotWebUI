@@ -1,4 +1,4 @@
-import type { MetaFunction, LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData, useFetcher, useRevalidator } from "@remix-run/react";
 import { useEffect, useState } from "react";
@@ -20,10 +20,6 @@ export type Message = {
 };
 
 type FetcherType = ReturnType<typeof useFetcher<typeof action>>;
-
-export const meta: MetaFunction = () => {
-    return [{ title: "Ophelia" }, { name: "description", content: "Chat with Ophelia" }];
-};
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
     let characterData: Character, characterStatus: number;

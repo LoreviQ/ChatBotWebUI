@@ -2,7 +2,6 @@ import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { prefs } from "../utils/cookies";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
-import type { MetaFunction } from "@remix-run/node";
 import type { Event } from "./characters.$character.events";
 import { EventLog } from "./characters.$character.events";
 import type { Post } from "./characters.$character.posts";
@@ -13,10 +12,6 @@ import type { Cookie } from "../utils/cookies";
 import { api, endpoints } from "../utils/api";
 import { useEffect } from "react";
 import type { Character } from "./characters";
-
-export const meta: MetaFunction = () => {
-    return [{ title: "Ophelia" }, { name: "description", content: "All about Ophelia" }];
-};
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
     let characterData: Character, characterStatus: number;
