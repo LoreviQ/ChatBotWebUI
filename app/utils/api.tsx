@@ -10,7 +10,7 @@ const api = axios.create({
 const endpoints = {
     newThreadMessage: (thread_id: string) => `${API_VERSION}/threads/${thread_id}/message`,
     threadMessages: (thread_id: string) => `${API_VERSION}/threads/${thread_id}/messages`,
-    message: (message_id: string) => `${API_VERSION}/messages/${message_id}`,
+    message: (message_id: string, query = "") => `${API_VERSION}/messages/${message_id}?${query}`,
     characterEvents: (char_path: string, query = "") => `${API_VERSION}/characters/${char_path}/events?${query}`,
     characterPosts: (char_path: string, query = "") => `${API_VERSION}/characters/${char_path}/posts?${query}`,
     imageURL: (image_path: string) => `${API_URL}/${API_VERSION}/images/${image_path}`,

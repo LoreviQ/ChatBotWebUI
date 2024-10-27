@@ -56,7 +56,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
                 return json({ type: "post_message", status: response.status });
             case "DELETE":
                 const message_id = formData.get("message_id") as string;
-                response = await api.delete(endpoints.message(message_id));
+                response = await api.delete(endpoints.message(message_id, "recent=true"));
                 return json({ type: "delete_messages", status: response.status });
             case "PATCH":
                 response = await api.get(endpoints.newThreadMessage(params.thread!));
@@ -344,6 +344,6 @@ export function useChatFetcher(character: string, thread: string) {
     const fetcher = useFetcher<FetcherType>({
         key: `chat-${character}-${thread}`,
     });
-    fetcher.formAction = `/${character}/chat/${thread}`;
+    fetcher.formAction = `/characters/${character}/chat/${thread}`;
     return fetcher;
 }
