@@ -2,30 +2,7 @@ import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { api, endpoints } from "../utils/api";
 import { json } from "@remix-run/node";
-
-export type Character = {
-    id: number;
-    name: string;
-    path_name: string;
-    description: string;
-    age: number;
-    height: string;
-    personality: string;
-    appearance: string;
-    loves: string;
-    hates: string;
-    details: string;
-    scenario: string;
-    important: string;
-    initial_message: string;
-    favorite_colour: string;
-    phases: boolean;
-    img_gen: boolean;
-    model: string;
-    global_positive: string;
-    global_negative: string;
-    profile_path: string;
-};
+import type { Character } from "./characters";
 
 export async function loader({}: LoaderFunctionArgs) {
     let characterData: Character[], characterStatus: number;

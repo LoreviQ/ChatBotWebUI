@@ -1,9 +1,9 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { prefs } from "./../utils/cookies";
+import { prefs } from "../utils/cookies";
 import { useLoaderData, Form, redirect } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
-import type { Cookie } from "./../utils/cookies";
+import type { Cookie } from "../utils/cookies";
 import { api, endpoints } from "../utils/api";
 import { useEffect, useState } from "react";
 
