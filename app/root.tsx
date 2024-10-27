@@ -128,7 +128,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
             setUserPrefs(prefs);
         }
         if (loaderData?.params?.character) {
-            console.log(loaderData?.params?.character);
             setShowBackButton(true);
         }
     }, [loaderData]);
