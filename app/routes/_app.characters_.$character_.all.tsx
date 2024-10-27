@@ -3,16 +3,16 @@ import { json } from "@remix-run/node";
 import { prefs } from "../utils/cookies";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
-import type { Event } from "./characters_.$character_.events";
-import { EventLog } from "./characters_.$character_.events";
-import type { Post } from "./characters_.$character_.posts";
-import { PostLog } from "./characters_.$character_.posts";
-import type { Message } from "./characters_.$character_.chat.$thread";
-import { FullChat } from "./characters_.$character_.chat.$thread";
+import type { Event } from "./_app.characters_.$character_.events";
+import { EventLog } from "./_app.characters_.$character_.events";
+import type { Post } from "./_app.characters_.$character_.posts";
+import { PostLog } from "./_app.characters_.$character_.posts";
+import type { Message } from "./_app.characters_.$character_.chat.$thread";
+import { FullChat } from "./_app.characters_.$character_.chat.$thread";
 import type { Cookie } from "../utils/cookies";
 import { api, endpoints } from "../utils/api";
 import { useEffect } from "react";
-import type { Character } from "./characters";
+import type { Character } from "./_app.characters";
 
 export const meta: MetaFunction = () => {
     return [{ title: "Ophelia" }, { name: "description", content: "All about Ophelia" }];

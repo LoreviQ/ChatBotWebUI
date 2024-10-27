@@ -13,7 +13,7 @@ import {
 import type { Cookie } from "./utils/cookies";
 import { prefs, isJwtExpired } from "./utils/cookies";
 import { api, endpoints } from "./utils/api";
-import { Character } from "./routes/characters";
+import { Character } from "./routes/_app.characters";
 import { useState, useEffect } from "react";
 import { getConstrastingColour } from "./utils/colours";
 

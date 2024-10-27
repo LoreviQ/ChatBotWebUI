@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { api, endpoints } from "../utils/api";
 import { json } from "@remix-run/node";
-import type { Character } from "./characters";
+import type { Character } from "./_app.characters";
 import { CharacterOutlineButton } from "../components/buttons";
 
 export async function loader({ params }: LoaderFunctionArgs) {
