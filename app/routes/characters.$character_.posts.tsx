@@ -21,10 +21,6 @@ export type Post = {
     image_path: string;
 };
 
-export const meta: MetaFunction = () => {
-    return [{ title: "Ophelia" }, { name: "description", content: "See Ophelia's posts" }];
-};
-
 export async function loader({ params, request }: LoaderFunctionArgs) {
     let characterData: Character, characterStatus: number;
     try {

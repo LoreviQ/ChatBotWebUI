@@ -1,9 +1,16 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { api, endpoints } from "../utils/api";
 import { json } from "@remix-run/node";
+
 import type { Character } from "./characters";
+import { api, endpoints } from "../utils/api";
 import { CharacterOutlineButton } from "../components/buttons";
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+    if (!data) return [{ title: "Echoes AI" }];
+    const character = data.character.data as Character;
+    return [{ title: `${character.name} - Echoes AI` }];
+};
 
 export async function loader({ params }: LoaderFunctionArgs) {
     let characterData: Character, characterStatus: number;
@@ -16,13 +23,13 @@ export async function loader({ params }: LoaderFunctionArgs) {
         characterStatus = 500;
     }
     return json({
-        characters: { data: characterData, status: characterStatus },
+        character: { data: characterData, status: characterStatus },
     });
 }
 
 export default function CharactersData() {
     const loaderData = useLoaderData<typeof loader>();
-    const character = loaderData.characters.data as Character;
+    const character = loaderData.character.data as Character;
 
     return (
         <div className="mt-20">

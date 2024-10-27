@@ -17,10 +17,6 @@ export type Event = {
     content: string;
 };
 
-export const meta: MetaFunction = () => {
-    return [{ title: "Ophelia" }, { name: "description", content: "See what Ophelia's been up to" }];
-};
-
 export async function loader({ params, request }: LoaderFunctionArgs) {
     let eventData: Event[], eventStatus: number;
     try {

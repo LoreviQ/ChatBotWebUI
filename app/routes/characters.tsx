@@ -1,5 +1,5 @@
+import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
 import { useState, useEffect } from "react";
 
@@ -32,6 +32,10 @@ export type Character = {
     global_positive: string;
     global_negative: string;
     profile_path: string;
+};
+
+export const meta: MetaFunction = () => {
+    return [{ title: "Characters - Echoes AI" }];
 };
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
