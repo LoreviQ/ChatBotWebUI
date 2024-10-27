@@ -6,7 +6,7 @@ import { endpoints } from "../utils/api";
 import { CharacterOutlineButton } from "../components/buttons";
 
 export default function CharactersData() {
-    const character = useOutletContext<Character>();
+    const [character, detatched] = useOutletContext();
     return <CharacterDetails character={character} />;
 }
 

@@ -18,6 +18,8 @@ const endpoints = {
     character: (char_path: string) => `${API_VERSION}/characters/${char_path}`,
     login: () => `${API_VERSION}/login`,
     users: () => `${API_VERSION}/users`,
+    readiness: () => `${API_VERSION}/readiness`,
+    detatched: () => `${API_VERSION}/detatched`,
 };
 
 export { endpoints, api };

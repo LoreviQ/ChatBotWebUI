@@ -10,6 +10,7 @@ import { prefs } from "../utils/cookies";
 import { api, endpoints } from "../utils/api";
 import type { Character } from "./characters";
 import { characterErrMessage } from "../utils/errors";
+import { WarningDualText } from "../components/warnings";
 
 export type Post = {
     id: number;
@@ -41,7 +42,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 export default function Posts() {
     const loaderData = useLoaderData<typeof loader>();
-    const character = useOutletContext<Character>();
+    const [character, detatched] = useOutletContext();
     const posts = loaderData.posts.data as Post[];
     const userPrefs = loaderData.userPrefs as Cookie;
     const statuses = [loaderData.posts.status];
@@ -54,7 +55,14 @@ export default function Posts() {
     }, [revalidate]);
     return (
         <div className="container mx-auto max-w-2xl">
-            <PostLog character={character} posts={posts} userPrefs={userPrefs} component={false} statuses={statuses} />
+            <PostLog
+                character={character}
+                posts={posts}
+                userPrefs={userPrefs}
+                component={false}
+                statuses={statuses}
+                detatched={detatched}
+            />
         </div>
     );
 }
@@ -65,9 +73,10 @@ interface PostLogProps {
     userPrefs: Cookie;
     component: boolean;
     statuses: number[];
+    detatched: boolean;
 }
 
-export function PostLog({ character, posts, userPrefs, component, statuses }: PostLogProps) {
+export function PostLog({ character, posts, userPrefs, component, statuses, detatched }: PostLogProps) {
     // Guard clauses
     statuses.map((status) => {
         if (status === 500) {
@@ -113,6 +122,12 @@ export function PostLog({ character, posts, userPrefs, component, statuses }: Po
                     return <TextPost key={index} post={post} character={character} index={index} />;
                 })}
             </div>
+            {detatched && (
+                <WarningDualText
+                    text1="The API is running in detatched mode."
+                    text2="New posts will not be generated."
+                />
+            )}
         </div>
     );
 }

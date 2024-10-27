@@ -57,7 +57,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 export default function CharacterAll() {
     const loaderData = useLoaderData<typeof loader>();
-    const character = useOutletContext<Character>();
+    const [character, detatched] = useOutletContext();
     const events = loaderData.events.data as Event[];
     const messages = loaderData.messages.data as Message[];
     const posts = loaderData.posts.data as Post[];
@@ -79,6 +79,7 @@ export default function CharacterAll() {
                         userPrefs={userPrefs}
                         component={false}
                         statuses={[loaderData.events.status]}
+                        detatched={detatched}
                     />
                 </div>
                 <div className="w-1/3">
@@ -88,6 +89,7 @@ export default function CharacterAll() {
                         userPrefs={userPrefs}
                         thread={"1"}
                         statuses={[loaderData.messages.status]}
+                        detatched={detatched}
                     />
                 </div>
                 <div className="w-1/3">
@@ -97,6 +99,7 @@ export default function CharacterAll() {
                         userPrefs={userPrefs}
                         component={false}
                         statuses={[loaderData.posts.status]}
+                        detatched={detatched}
                     />
                 </div>
             </div>

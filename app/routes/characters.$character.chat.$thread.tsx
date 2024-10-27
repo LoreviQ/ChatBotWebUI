@@ -12,6 +12,7 @@ import { prefs } from "../utils/cookies";
 import { api, endpoints } from "../utils/api";
 import type { Cookie } from "../utils/cookies";
 import type { Character } from "./characters";
+import { WarningDualText } from "../components/warnings";
 
 export type Message = {
     id: number;
@@ -70,7 +71,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 // Entry point for this endpoint
 export default function Chat() {
     const loaderData = useLoaderData<typeof loader>();
-    const character = useOutletContext<Character>();
+    const [character, detatched] = useOutletContext();
     const messages = loaderData.messages.data as Message[];
     const userPrefs = loaderData.userPrefs as Cookie;
 
@@ -89,6 +90,7 @@ export default function Chat() {
                 userPrefs={userPrefs}
                 thread={loaderData.params.thread!}
                 statuses={[loaderData.messages.status]}
+                detatched={detatched}
             />
         </div>
     );
@@ -101,8 +103,9 @@ interface FullChatProps {
     userPrefs: Cookie;
     thread: string;
     statuses: number[];
+    detatched: boolean;
 }
-export function FullChat({ character, messages, userPrefs, thread, statuses }: FullChatProps) {
+export function FullChat({ character, messages, userPrefs, thread, statuses, detatched }: FullChatProps) {
     // Guard clauses
     statuses.map((status) => {
         if (status === 500) {
@@ -181,7 +184,14 @@ export function FullChat({ character, messages, userPrefs, thread, statuses }: F
                 })}
             </div>
             <IsTypingMessage isTyping={isTyping} character={character.name} />
-            <GetResponseImmediately fetcher={fetcher} character={character.name} isSpinning={isSpinning} />
+            {detatched ? (
+                <WarningDualText
+                    text1="The API is running in detatched mode."
+                    text2="Messages can be sent but responses will not be generated."
+                />
+            ) : (
+                <GetResponseImmediately fetcher={fetcher} character={character.name} isSpinning={isSpinning} />
+            )}
             <UserInputMessageBox
                 fetcher={fetcher}
                 character={character.name}

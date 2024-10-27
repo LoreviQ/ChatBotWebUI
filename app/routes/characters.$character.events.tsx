@@ -1,6 +1,7 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
+import { useOutletContext } from "react-router-dom";
 import { format, parseISO, isSameDay, isToday, addDays } from "date-fns";
 import { useEffect } from "react";
 
@@ -8,6 +9,7 @@ import type { Cookie } from "../utils/cookies";
 import { prefs } from "../utils/cookies";
 import { api, endpoints } from "../utils/api";
 import { characterErrMessage } from "../utils/errors";
+import { WarningDualText } from "../components/warnings";
 
 export type Event = {
     id: number;
@@ -35,6 +37,7 @@ export default function Events() {
     const loaderData = useLoaderData<typeof loader>();
     const events = loaderData.events.data as Event[];
     const userPrefs = loaderData.userPrefs as Cookie;
+    const [character, detatched] = useOutletContext();
 
     // Revalidate the events every minute
     let { revalidate } = useRevalidator();
@@ -45,7 +48,13 @@ export default function Events() {
 
     return (
         <div className="container mx-auto max-w-2xl">
-            <EventLog events={events} userPrefs={userPrefs} component={false} statuses={[loaderData.events.status]} />
+            <EventLog
+                events={events}
+                userPrefs={userPrefs}
+                component={false}
+                statuses={[loaderData.events.status]}
+                detatched={detatched}
+            />
         </div>
     );
 }
@@ -55,9 +64,10 @@ interface EventLogProps {
     userPrefs: Cookie;
     component: boolean;
     statuses: number[];
+    detatched: boolean;
 }
 
-export function EventLog({ events, userPrefs, component, statuses }: EventLogProps) {
+export function EventLog({ events, userPrefs, component, statuses, detatched }: EventLogProps) {
     // Guard clauses
     statuses.map((status) => {
         if (status === 500) {
@@ -82,6 +92,7 @@ export function EventLog({ events, userPrefs, component, statuses }: EventLogPro
         }
         return b.id - a.id;
     });
+
     return (
         <div className="flex flex-col h-screen">
             <div
@@ -108,6 +119,12 @@ export function EventLog({ events, userPrefs, component, statuses }: EventLogPro
                     );
                 })}
             </div>
+            {detatched && (
+                <WarningDualText
+                    text1="The API is running in detatched mode."
+                    text2="New events will not be generated."
+                />
+            )}
         </div>
     );
 }
