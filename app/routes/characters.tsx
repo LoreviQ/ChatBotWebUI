@@ -8,6 +8,7 @@ import { prefs, isJwtExpired } from "../utils/cookies";
 import { api, endpoints } from "../utils/api";
 import { getConstrastingColour } from "../utils/colours";
 import { Header } from "../components/header";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 
 export type Character = {
     id: number;
@@ -59,6 +60,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction = ({ currentParams, nextParams, defaultShouldRevalidate }) => {
+    const currentCharacter = currentParams.character;
+    const nextCharacter = nextParams.character;
+    if (currentCharacter !== nextCharacter) return true;
+    return defaultShouldRevalidate;
+};
+
 export async function action({ request }: ActionFunctionArgs) {
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};
@@ -79,7 +87,7 @@ export default function CharacterAdjustingHeader() {
     const [primaryColour, setPrimaryColour] = useState("#FFFFFF");
     const [contrastingColour, setContrastingColour] = useState("#000000");
     const [title, setTitle] = useState("Echoes AI");
-    const [titleLink, setTitleLink] = useState("/");
+    const [titleLink, setTitleLink] = useState("/characters");
     const [showBackButton, setShowBackButton] = useState(false);
     // Modify state based on character data
     const loaderData = useLoaderData<typeof loader>();
@@ -89,15 +97,24 @@ export default function CharacterAdjustingHeader() {
         if (loaderData.character.data.favorite_colour) {
             setPrimaryColour(loaderData.character.data.favorite_colour);
             setContrastingColour(getConstrastingColour(loaderData.character.data.favorite_colour));
+        } else {
+            setPrimaryColour("#FFFFFF");
+            setContrastingColour("#000000");
         }
         if (loaderData.character.data.name) {
             setTitle(loaderData.character.data.name);
+        } else {
+            setTitle("Echoes AI");
         }
         if (loaderData.character.data.path_name) {
             setTitleLink(`/characters/${loaderData.character.data.path_name}`);
+        } else {
+            setTitleLink("/characters");
         }
         if (loaderData?.params?.character) {
             setShowBackButton(true);
+        } else {
+            setShowBackButton(false);
         }
     }, [character]);
     return (
