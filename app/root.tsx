@@ -1,5 +1,14 @@
-import type { LinksFunction } from "@remix-run/node";
-import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteError, isRouteErrorResponse } from "@remix-run/react";
+import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
+import {
+    Links,
+    Meta,
+    Outlet,
+    Scripts,
+    ScrollRestoration,
+    useRouteError,
+    isRouteErrorResponse,
+    redirect,
+} from "@remix-run/react";
 
 import "./tailwind.css";
 import "./styles.css";
@@ -50,6 +59,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </body>
         </html>
     );
+}
+
+export async function loader({ request }: LoaderFunctionArgs) {
+    const url = new URL(request.url);
+    if (url.pathname === "/") {
+        return redirect("/characters");
+    }
+    return null;
 }
 
 export default function App() {
