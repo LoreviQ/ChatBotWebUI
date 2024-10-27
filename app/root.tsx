@@ -61,14 +61,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
     );
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
-    const url = new URL(request.url);
-    if (url.pathname === "/") {
-        return redirect("/characters");
-    }
-    return null;
-}
-
 export default function App() {
     return (
         <div>
