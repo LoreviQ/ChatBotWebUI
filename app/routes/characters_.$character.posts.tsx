@@ -141,7 +141,7 @@ interface postProps {
 function ImagePost({ post, character, index }: postProps) {
     return (
         <div className="px-4">
-            <div className="flex pb-4  w-full">
+            <div className="flex pb-4 w-full">
                 <img
                     className="rounded-full w-20 me-8"
                     src={endpoints.imageURL(character.profile_path)}

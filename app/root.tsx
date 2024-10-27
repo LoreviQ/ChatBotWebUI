@@ -12,6 +12,7 @@ import {
     useFetcher,
     useSubmit,
     Link,
+    useRevalidator,
 } from "@remix-run/react";
 import type { Cookie } from "./utils/cookies";
 import { prefs, isJwtExpired } from "./utils/cookies";
@@ -21,6 +22,7 @@ import { useState, useEffect } from "react";
 import { getConstrastingColour } from "./utils/colours";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { CharacterOutlineButton } from "./components/buttons";
 
 import "./tailwind.css";
 import "./styles.css";
@@ -106,6 +108,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     const [showBackButton, setShowBackButton] = useState(false);
     // Modify state based on character data
     const loaderData = useRouteLoaderData<typeof loader>("root");
+    let { revalidate } = useRevalidator();
     useEffect(() => {
         if (!loaderData) {
             return;
@@ -229,25 +232,11 @@ function Header({ title, userPrefs, titleLink, loggedIn, showBackButton }: heade
                     </div>
                     {loggedIn ? (
                         <fetcher.Form method="post" action="/logout">
-                            <button
-                                className="py-2 px-4 border rounded font-semibold
-                                    bg-transparent  text-character border-character
-                                    hover:bg-character hover:text-contrast hover:border-transparent
-                                "
-                            >
-                                Logout
-                            </button>
+                            <CharacterOutlineButton text="Logout" />
                         </fetcher.Form>
                     ) : (
                         <Link to="/login">
-                            <button
-                                className="py-2 px-4 border rounded font-semibold
-                                    bg-transparent  text-character border-character
-                                    hover:bg-character hover:text-contrast hover:border-transparent
-                                "
-                            >
-                                Login
-                            </button>
+                            <CharacterOutlineButton text="Login" />
                         </Link>
                     )}
                 </div>

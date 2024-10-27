@@ -1,8 +1,7 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, useRevalidator, Link } from "@remix-run/react";
+import type { LoaderFunctionArgs } from "@remix-run/node";
+import { useLoaderData, Link } from "@remix-run/react";
 import { api, endpoints } from "../utils/api";
 import { json } from "@remix-run/node";
-import { useEffect } from "react";
 
 export type Character = {
     id: number;
@@ -43,20 +42,9 @@ export async function loader({}: LoaderFunctionArgs) {
     });
 }
 
-export async function action({ request }: ActionFunctionArgs) {
-    return;
-}
-
 export default function CharactersList() {
     const loaderData = useLoaderData<typeof loader>();
     const characters = loaderData.characters.data as Character[];
-
-    // Revalidate the characters every 10 minutes
-    let { revalidate } = useRevalidator();
-    useEffect(() => {
-        let id = setInterval(revalidate, 600000);
-        return () => clearInterval(id);
-    }, [revalidate]);
 
     return (
         <div className="mt-20 flex flex-wrap">
@@ -71,6 +59,7 @@ export default function CharactersList() {
     );
 }
 
+// Render a character card
 interface CharacterCardProps {
     character: Character;
 }
