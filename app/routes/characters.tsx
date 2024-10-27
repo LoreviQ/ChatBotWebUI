@@ -34,8 +34,11 @@ export type Character = {
     profile_path: string;
 };
 
-export const meta: MetaFunction = () => {
-    return [{ title: "Characters - Echoes AI" }];
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+    if (!data) return [{ title: "Echoes AI" }];
+    if (data.character.status === 404) return [{ title: "Characters - Echoes AI" }];
+    const character = data.character.data as Character;
+    return [{ title: `${character.name} - Echoes AI` }];
 };
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -130,7 +133,7 @@ export default function CharacterAdjustingHeader() {
                 loggedIn={!!loaderData?.auth.loggedIn}
                 showBackButton={showBackButton}
             />
-            <Outlet />
+            <Outlet context={character} />
         </div>
     );
 }

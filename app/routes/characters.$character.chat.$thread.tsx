@@ -2,6 +2,7 @@ import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData, useFetcher, useRevalidator } from "@remix-run/react";
 import { useEffect, useState } from "react";
+import { useOutletContext } from "react-router-dom";
 
 import { format, parseISO, isSameDay, isToday, addDays, addSeconds } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -22,15 +23,6 @@ export type Message = {
 type FetcherType = ReturnType<typeof useFetcher<typeof action>>;
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-    let characterData: Character, characterStatus: number;
-    try {
-        const response = await api.get(endpoints.character(params.character!));
-        characterData = await response.data;
-        characterStatus = response.status;
-    } catch (error) {
-        characterData = {} as Character;
-        characterStatus = 500;
-    }
     let messageData: Message[], messageStatus: number;
     try {
         const response = await api.get(endpoints.threadMessages(params.thread!));
@@ -43,7 +35,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};
     return json({
-        character: { data: characterData, status: characterStatus },
         messages: { data: messageData, status: messageStatus },
         userPrefs: { debug: cookie.debug },
         params: params,
@@ -79,7 +70,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 // Entry point for this endpoint
 export default function Chat() {
     const loaderData = useLoaderData<typeof loader>();
-    const character = loaderData.character.data as Character;
+    const character = useOutletContext<Character>();
     const messages = loaderData.messages.data as Message[];
     const userPrefs = loaderData.userPrefs as Cookie;
 
@@ -97,7 +88,7 @@ export default function Chat() {
                 messages={messages}
                 userPrefs={userPrefs}
                 thread={loaderData.params.thread!}
-                statuses={[loaderData.character.status, loaderData.messages.status]}
+                statuses={[loaderData.messages.status]}
             />
         </div>
     );

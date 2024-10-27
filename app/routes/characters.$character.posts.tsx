@@ -3,6 +3,7 @@ import { json } from "@remix-run/node";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { parseISO, formatDistanceToNow } from "date-fns";
 import { useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
 
 import type { Cookie } from "../utils/cookies";
 import { prefs } from "../utils/cookies";
@@ -21,15 +22,6 @@ export type Post = {
 };
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-    let characterData: Character, characterStatus: number;
-    try {
-        const response = await api.get(endpoints.character(params.character!));
-        characterData = await response.data;
-        characterStatus = response.status;
-    } catch (error) {
-        characterData = {} as Character;
-        characterStatus = 500;
-    }
     let postData: Post[], postStatus: number;
     try {
         const response = await api.get(endpoints.characterPosts(params.character!));
@@ -42,7 +34,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};
     return json({
-        character: { data: characterData, status: characterStatus },
         posts: { data: postData, status: postStatus },
         userPrefs: { debug: cookie.debug },
     });
@@ -50,10 +41,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 export default function Posts() {
     const loaderData = useLoaderData<typeof loader>();
-    const character = loaderData.character.data as Character;
+    const character = useOutletContext<Character>();
     const posts = loaderData.posts.data as Post[];
     const userPrefs = loaderData.userPrefs as Cookie;
-    const statuses = [loaderData.character.status, loaderData.posts.status];
+    const statuses = [loaderData.posts.status];
 
     // Revalidate the posts every minute
     let { revalidate } = useRevalidator();

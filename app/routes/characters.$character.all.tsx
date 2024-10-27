@@ -1,28 +1,21 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { prefs } from "../utils/cookies";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
-import type { Event } from "./characters.$character.events";
-import { EventLog } from "./characters.$character.events";
-import type { Post } from "./characters.$character.posts";
-import { PostLog } from "./characters.$character.posts";
-import type { Message } from "./characters.$character.chat.$thread";
-import { FullChat } from "./characters.$character.chat.$thread";
-import type { Cookie } from "../utils/cookies";
-import { api, endpoints } from "../utils/api";
+import { useOutletContext } from "react-router-dom";
 import { useEffect } from "react";
+
+import type { Event } from "./characters.$character.events";
+import type { Post } from "./characters.$character.posts";
+import type { Message } from "./characters.$character.chat.$thread";
+import type { Cookie } from "../utils/cookies";
 import type { Character } from "./characters";
+import { FullChat } from "./characters.$character.chat.$thread";
+import { PostLog } from "./characters.$character.posts";
+import { EventLog } from "./characters.$character.events";
+import { prefs } from "../utils/cookies";
+import { api, endpoints } from "../utils/api";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-    let characterData: Character, characterStatus: number;
-    try {
-        const response = await api.get(endpoints.character(params.character!));
-        characterData = await response.data;
-        characterStatus = response.status;
-    } catch (error) {
-        characterData = {} as Character;
-        characterStatus = 500;
-    }
     let eventData: Event[], eventStatus: number;
     try {
         const response = await api.get(endpoints.characterEvents(params.character!));
@@ -54,7 +47,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};
     return json({
-        character: { data: characterData, status: characterStatus },
         events: { data: eventData, status: eventStatus },
         messages: { data: messageData, status: messageStatus },
         posts: { data: postData, status: postStatus },
@@ -65,7 +57,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 export default function CharacterAll() {
     const loaderData = useLoaderData<typeof loader>();
-    const character = loaderData.character.data as Character;
+    const character = useOutletContext<Character>();
     const events = loaderData.events.data as Event[];
     const messages = loaderData.messages.data as Message[];
     const posts = loaderData.posts.data as Post[];
@@ -95,7 +87,7 @@ export default function CharacterAll() {
                         messages={messages}
                         userPrefs={userPrefs}
                         thread={"1"}
-                        statuses={[loaderData.character.status, loaderData.messages.status]}
+                        statuses={[loaderData.messages.status]}
                     />
                 </div>
                 <div className="w-1/3">
@@ -104,7 +96,7 @@ export default function CharacterAll() {
                         posts={posts}
                         userPrefs={userPrefs}
                         component={false}
-                        statuses={[loaderData.character.status, loaderData.posts.status]}
+                        statuses={[loaderData.posts.status]}
                     />
                 </div>
             </div>
