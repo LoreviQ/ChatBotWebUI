@@ -1,19 +1,18 @@
 import axios from "axios";
 
-const API_URL = "https://echoesai.a.pinggy.link/";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/";
 const API_VERSION = "v1";
 
-const api = axios.create({
+export const api = axios.create({
     baseURL: API_URL,
 });
 
-const endpoints = {
+export const endpoints = {
     newThreadMessage: (thread_id: string) => `${API_VERSION}/threads/${thread_id}/message`,
     threadMessages: (thread_id: string) => `${API_VERSION}/threads/${thread_id}/messages`,
     message: (message_id: string, query = "") => `${API_VERSION}/messages/${message_id}?${query}`,
     characterEvents: (char_path: string, query = "") => `${API_VERSION}/characters/${char_path}/events?${query}`,
     characterPosts: (char_path: string, query = "") => `${API_VERSION}/characters/${char_path}/posts?${query}`,
-    imageURL: (image_path: string) => `${API_URL}/${API_VERSION}/images/${image_path}`,
     characters: (query = "") => `${API_VERSION}/characters?${query}`,
     character: (char_path: string) => `${API_VERSION}/characters/${char_path}`,
     login: () => `${API_VERSION}/login`,
@@ -22,4 +21,6 @@ const endpoints = {
     detatched: () => `${API_VERSION}/detatched`,
 };
 
-export { endpoints, api };
+export function imageURL(path: string) {
+    return `https://storage.googleapis.com/echoesai-public-images/${path}`;
+}

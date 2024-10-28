@@ -2,7 +2,7 @@ import { Link } from "@remix-run/react";
 import { useOutletContext } from "react-router-dom";
 
 import type { Character } from "./characters";
-import { endpoints } from "../utils/api";
+import { imageURL } from "../utils/api";
 import { CharacterOutlineButton } from "../components/buttons";
 
 export default function CharactersData() {
@@ -32,7 +32,7 @@ function CharacterDetails({ character }: CharacterDetailsProps) {
                 </Link>
             </div>
             <div className="flex items-center">
-                <img className="p-5" src={endpoints.imageURL(character.profile_path)} />
+                <img className="p-5" src={imageURL(character.profile_path)} />
                 <div className="p-5 flex flex-col text-xl space-y-2">
                     <p>Age: {character.age}</p>
                     <p>Height: {character.height}</p>

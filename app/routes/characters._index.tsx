@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { api, endpoints } from "../utils/api";
+import { api, endpoints, imageURL } from "../utils/api";
 import { json } from "@remix-run/node";
 import type { Character } from "./characters";
 
@@ -53,7 +53,7 @@ export function CharacterCard({ character }: CharacterCardProps) {
                     <img
                         className="rounded-full w-20 me-8 border-2"
                         style={{ borderColor: character.favorite_colour }}
-                        src={endpoints.imageURL(character.profile_path)}
+                        src={imageURL(character.profile_path)}
                     />
                     <h2 className="text-4xl font-semibold" style={{ color: character.favorite_colour }}>
                         {character.name}
