@@ -45,7 +45,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     let characterData: Character, characterStatus: number;
     if (params?.character) {
         try {
-            const response = await api.get(endpoints.character(params.character!));
+            const response = await api().get(endpoints.character(params.character!));
             characterData = await response.data;
             characterStatus = response.status;
         } catch (error) {

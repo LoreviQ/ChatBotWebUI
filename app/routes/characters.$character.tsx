@@ -16,7 +16,7 @@ interface LoaderData {
 }
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-    const response = await api.get(endpoints.detatched());
+    const response = await api().get(endpoints.detatched());
     const detatched = (await response.data) === "True";
     return json({
         detatched,

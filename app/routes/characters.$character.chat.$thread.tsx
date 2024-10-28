@@ -27,7 +27,7 @@ type FetcherType = ReturnType<typeof useFetcher<typeof action>>;
 export async function loader({ params, request }: LoaderFunctionArgs) {
     let messageData: Message[], messageStatus: number;
     try {
-        const response = await api.get(endpoints.threadMessages(params.thread!));
+        const response = await api().get(endpoints.threadMessages(params.thread!));
         messageData = await response.data;
         messageStatus = response.status;
     } catch (error) {
@@ -54,14 +54,14 @@ export async function action({ params, request }: ActionFunctionArgs) {
                     return json({ type: "error", status: 400 });
                 }
                 const payload = { role: "user", content: content };
-                response = await api.post(endpoints.threadMessages(params.thread!), payload);
+                response = await api().post(endpoints.threadMessages(params.thread!), payload);
                 return json({ type: "post_message", status: response.status });
             case "DELETE":
                 const message_id = formData.get("message_id") as string;
-                response = await api.delete(endpoints.message(message_id, "recent=true"));
+                response = await api().delete(endpoints.message(message_id, "recent=true"));
                 return json({ type: "delete_messages", status: response.status });
             case "PATCH":
-                response = await api.get(endpoints.newThreadMessage(params.thread!));
+                response = await api().get(endpoints.newThreadMessage(params.thread!));
                 return json({ type: "get_messages", status: response.status });
         }
     } catch (error) {

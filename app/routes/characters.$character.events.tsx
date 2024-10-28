@@ -22,7 +22,7 @@ export type Event = {
 export async function loader({ params, request }: LoaderFunctionArgs) {
     let eventData: Event[], eventStatus: number;
     try {
-        const response = await api.get(endpoints.characterEvents(params.character!));
+        const response = await api().get(endpoints.characterEvents(params.character!));
         eventData = await response.data;
         eventStatus = response.status;
     } catch (error) {

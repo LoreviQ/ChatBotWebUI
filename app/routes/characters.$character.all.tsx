@@ -18,7 +18,7 @@ import { api, endpoints } from "../utils/api";
 export async function loader({ params, request }: LoaderFunctionArgs) {
     let eventData: Event[], eventStatus: number;
     try {
-        const response = await api.get(endpoints.characterEvents(params.character!));
+        const response = await api().get(endpoints.characterEvents(params.character!));
         eventData = await response.data;
         eventStatus = response.status;
     } catch (error) {
@@ -28,7 +28,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     let messageData: Message[], messageStatus: number;
     // temporary, threads will be dynamic
     try {
-        const response = await api.get(endpoints.threadMessages("1"));
+        const response = await api().get(endpoints.threadMessages("1"));
         messageData = await response.data;
         messageStatus = response.status;
     } catch (error) {
@@ -37,7 +37,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
     let postData: Post[], postStatus: number;
     try {
-        const response = await api.get(endpoints.characterPosts(params.character!));
+        const response = await api().get(endpoints.characterPosts(params.character!));
         postData = await response.data;
         postStatus = response.status;
     } catch (error) {

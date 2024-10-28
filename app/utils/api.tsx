@@ -1,11 +1,13 @@
 import axios from "axios";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/";
+const API_URL = "http://localhost:5000/";
 const API_VERSION = "v1";
 
-export const api = axios.create({
-    baseURL: API_URL,
-});
+export function api() {
+    return axios.create({
+        baseURL: process.env.API_URL || "http://localhost:5000/",
+    });
+}
 
 export const endpoints = {
     newThreadMessage: (thread_id: string) => `${API_VERSION}/threads/${thread_id}/message`,

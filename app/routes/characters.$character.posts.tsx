@@ -26,7 +26,7 @@ export type Post = {
 export async function loader({ params, request }: LoaderFunctionArgs) {
     let postData: Post[], postStatus: number;
     try {
-        const response = await api.get(endpoints.characterPosts(params.character!));
+        const response = await api().get(endpoints.characterPosts(params.character!));
         postData = await response.data;
         postStatus = response.status;
     } catch (error) {

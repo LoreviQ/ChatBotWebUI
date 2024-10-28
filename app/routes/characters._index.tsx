@@ -7,7 +7,7 @@ import type { Character } from "./characters";
 export async function loader({}: LoaderFunctionArgs) {
     let characterData: Character[], characterStatus: number;
     try {
-        const response = await api.get(endpoints.characters());
+        const response = await api().get(endpoints.characters());
         characterData = await response.data;
         characterStatus = response.status;
     } catch (error) {
