@@ -9,6 +9,7 @@ import type { Cookie } from "../utils/cookies";
 import { prefs } from "../utils/cookies";
 import { api, endpoints, imageURL } from "../utils/api";
 import type { Character } from "./characters";
+import type { OutletContextFromCharacter } from "./characters.$character";
 import { characterErrMessage } from "../utils/errors";
 import { WarningDualText } from "../components/warnings";
 
@@ -42,7 +43,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 export default function Posts() {
     const loaderData = useLoaderData<typeof loader>();
-    const [character, detatched] = useOutletContext();
+    const { character, detatched } = useOutletContext<OutletContextFromCharacter>();
     const posts = loaderData.posts.data as Post[];
     const userPrefs = loaderData.userPrefs as Cookie;
     const statuses = [loaderData.posts.status];

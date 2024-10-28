@@ -8,7 +8,7 @@ import type { Event } from "./characters.$character.events";
 import type { Post } from "./characters.$character.posts";
 import type { Message } from "./characters.$character.chat.$thread";
 import type { Cookie } from "../utils/cookies";
-import type { Character } from "./characters";
+import type { OutletContextFromCharacter } from "./characters.$character";
 import { FullChat } from "./characters.$character.chat.$thread";
 import { PostLog } from "./characters.$character.posts";
 import { EventLog } from "./characters.$character.events";
@@ -57,7 +57,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 export default function CharacterAll() {
     const loaderData = useLoaderData<typeof loader>();
-    const [character, detatched] = useOutletContext();
+    const { character, detatched } = useOutletContext<OutletContextFromCharacter>();
     const events = loaderData.events.data as Event[];
     const messages = loaderData.messages.data as Message[];
     const posts = loaderData.posts.data as Post[];

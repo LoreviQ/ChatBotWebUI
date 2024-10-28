@@ -10,6 +10,7 @@ import { prefs } from "../utils/cookies";
 import { api, endpoints } from "../utils/api";
 import { characterErrMessage } from "../utils/errors";
 import { WarningDualText } from "../components/warnings";
+import type { OutletContextFromCharacter } from "./characters.$character";
 
 export type Event = {
     id: number;
@@ -37,7 +38,7 @@ export default function Events() {
     const loaderData = useLoaderData<typeof loader>();
     const events = loaderData.events.data as Event[];
     const userPrefs = loaderData.userPrefs as Cookie;
-    const [character, detatched] = useOutletContext();
+    const { character, detatched } = useOutletContext<OutletContextFromCharacter>();
 
     // Revalidate the events every minute
     let { revalidate } = useRevalidator();

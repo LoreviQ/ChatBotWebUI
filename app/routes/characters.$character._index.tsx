@@ -2,11 +2,12 @@ import { Link } from "@remix-run/react";
 import { useOutletContext } from "react-router-dom";
 
 import type { Character } from "./characters";
+import type { OutletContextFromCharacter } from "./characters.$character";
 import { imageURL } from "../utils/api";
 import { CharacterOutlineButton } from "../components/buttons";
 
 export default function CharactersData() {
-    const [character, detatched] = useOutletContext();
+    const { character, detatched } = useOutletContext<OutletContextFromCharacter>();
     return <CharacterDetails character={character} />;
 }
 

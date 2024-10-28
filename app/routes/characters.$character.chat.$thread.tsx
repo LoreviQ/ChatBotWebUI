@@ -13,6 +13,7 @@ import { api, endpoints } from "../utils/api";
 import type { Cookie } from "../utils/cookies";
 import type { Character } from "./characters";
 import { WarningDualText } from "../components/warnings";
+import type { OutletContextFromCharacter } from "./characters.$character";
 
 export type Message = {
     id: number;
@@ -71,7 +72,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 // Entry point for this endpoint
 export default function Chat() {
     const loaderData = useLoaderData<typeof loader>();
-    const [character, detatched] = useOutletContext();
+    const { character, detatched } = useOutletContext<OutletContextFromCharacter>();
     const messages = loaderData.messages.data as Message[];
     const userPrefs = loaderData.userPrefs as Cookie;
 

@@ -6,6 +6,15 @@ import { json } from "@remix-run/node";
 import type { Character } from "./characters";
 import { api, endpoints } from "../utils/api";
 
+export interface OutletContextFromCharacter {
+    character: Character;
+    detatched: boolean;
+}
+
+interface LoaderData {
+    detatched: boolean;
+}
+
 export async function loader({ params, request }: LoaderFunctionArgs) {
     const response = await api.get(endpoints.detatched());
     const detatched = (await response.data) === "True";
@@ -16,10 +25,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 export default function CharactersData() {
     const character = useOutletContext<Character>();
-    const loaderData = useLoaderData();
+    const loaderData = useLoaderData<LoaderData>();
     return (
         <div>
-            <Outlet context={[character, loaderData.detatched]} />
+            <Outlet context={{ character, detatched: loaderData.detatched }} />
         </div>
     );
 }
