@@ -34,6 +34,11 @@ export type Character = {
     profile_path: string;
 };
 
+export interface OutletContextFromCharacters {
+    userPrefs: Cookie;
+    character: Character;
+}
+
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
     if (!data) return [{ title: "Echoes AI" }];
     if (data.character.status === 404) return [{ title: "Characters - Echoes AI" }];
@@ -133,7 +138,12 @@ export default function CharacterAdjustingHeader() {
                 loggedIn={!!loaderData?.auth.loggedIn}
                 showBackButton={showBackButton}
             />
-            <Outlet context={character} />
+            <Outlet
+                context={{
+                    userPrefs: userPrefs,
+                    character: character,
+                }}
+            />
         </div>
     );
 }

@@ -1,14 +1,13 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useLoaderData, useFetcher, useRevalidator } from "@remix-run/react";
+import { useLoaderData, useFetcher } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 
-import { format, parseISO, isSameDay, isToday, addDays, addSeconds } from "date-fns";
+import { format, isSameDay, isToday, addDays, addSeconds } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import { characterErrMessage } from "../utils/errors";
-import { prefs } from "../utils/cookies";
 import { api, endpoints } from "../utils/api";
 import type { Cookie } from "../utils/cookies";
 import type { Character } from "./characters";
@@ -25,20 +24,7 @@ export type Message = {
 type FetcherType = ReturnType<typeof useFetcher<typeof action>>;
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-    let messageData: Message[], messageStatus: number;
-    try {
-        const response = await api().get(endpoints.threadMessages(params.thread!));
-        messageData = await response.data;
-        messageStatus = response.status;
-    } catch (error) {
-        messageData = [];
-        messageStatus = 500;
-    }
-    const cookieHeader = request.headers.get("Cookie");
-    const cookie = (await prefs.parse(cookieHeader)) || {};
     return json({
-        messages: { data: messageData, status: messageStatus },
-        userPrefs: { debug: cookie.debug },
         params: params,
     });
 }
@@ -72,16 +58,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 // Entry point for this endpoint
 export default function Chat() {
     const loaderData = useLoaderData<typeof loader>();
-    const { character, detached } = useOutletContext<OutletContextFromCharacter>();
-    const messages = loaderData.messages.data as Message[];
-    const userPrefs = loaderData.userPrefs as Cookie;
-
-    // Revalidate the messages every 10 seconds
-    let { revalidate } = useRevalidator();
-    useEffect(() => {
-        let id = setInterval(revalidate, 10000);
-        return () => clearInterval(id);
-    }, [revalidate]);
+    const { userPrefs, character, messages, posts, events, detached } = useOutletContext<OutletContextFromCharacter>();
 
     return (
         <div className="container mx-auto max-w-2xl">
@@ -90,7 +67,6 @@ export default function Chat() {
                 messages={messages}
                 userPrefs={userPrefs}
                 thread={loaderData.params.thread!}
-                statuses={[loaderData.messages.status]}
                 detached={detached}
             />
         </div>
@@ -103,16 +79,10 @@ interface FullChatProps {
     messages: Message[];
     userPrefs: Cookie;
     thread: string;
-    statuses: number[];
     detached: boolean;
 }
-export function FullChat({ character, messages, userPrefs, thread, statuses, detached }: FullChatProps) {
+export function FullChat({ character, messages, userPrefs, thread, detached }: FullChatProps) {
     // Guard clauses
-    statuses.map((status) => {
-        if (status === 500) {
-            return characterErrMessage("Error getting messages from the server");
-        }
-    });
     if (messages.length === 0) {
         return characterErrMessage(`Send a message to ${character.name}!`);
     }

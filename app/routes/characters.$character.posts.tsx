@@ -1,15 +1,10 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
-import { useLoaderData, useRevalidator } from "@remix-run/react";
-import { parseISO, formatDistanceToNow } from "date-fns";
-import { useEffect } from "react";
+import { formatDistanceToNow } from "date-fns";
 import { useOutletContext } from "react-router-dom";
 
 import type { Cookie } from "../utils/cookies";
-import { prefs } from "../utils/cookies";
-import { api, endpoints, imageURL } from "../utils/api";
 import type { Character } from "./characters";
 import type { OutletContextFromCharacter } from "./characters.$character";
+import { imageURL } from "../utils/api";
 import { characterErrMessage } from "../utils/errors";
 import { WarningDualText } from "../components/warnings";
 
@@ -23,47 +18,11 @@ export type Post = {
     image_path: string;
 };
 
-export async function loader({ params, request }: LoaderFunctionArgs) {
-    let postData: Post[], postStatus: number;
-    try {
-        const response = await api().get(endpoints.characterPosts(params.character!));
-        postData = await response.data;
-        postStatus = response.status;
-    } catch (error) {
-        postData = [];
-        postStatus = 500;
-    }
-    const cookieHeader = request.headers.get("Cookie");
-    const cookie = (await prefs.parse(cookieHeader)) || {};
-    return json({
-        posts: { data: postData, status: postStatus },
-        userPrefs: { debug: cookie.debug },
-    });
-}
-
 export default function Posts() {
-    const loaderData = useLoaderData<typeof loader>();
-    const { character, detached } = useOutletContext<OutletContextFromCharacter>();
-    const posts = loaderData.posts.data as Post[];
-    const userPrefs = loaderData.userPrefs as Cookie;
-    const statuses = [loaderData.posts.status];
-
-    // Revalidate the posts every minute
-    let { revalidate } = useRevalidator();
-    useEffect(() => {
-        let id = setInterval(revalidate, 60000);
-        return () => clearInterval(id);
-    }, [revalidate]);
+    const { userPrefs, character, messages, posts, events, detached } = useOutletContext<OutletContextFromCharacter>();
     return (
         <div className="container mx-auto max-w-2xl">
-            <PostLog
-                character={character}
-                posts={posts}
-                userPrefs={userPrefs}
-                component={false}
-                statuses={statuses}
-                detached={detached}
-            />
+            <PostLog character={character} posts={posts} userPrefs={userPrefs} component={false} detached={detached} />
         </div>
     );
 }
@@ -73,17 +32,10 @@ interface PostLogProps {
     posts: Post[];
     userPrefs: Cookie;
     component: boolean;
-    statuses: number[];
     detached: boolean;
 }
 
-export function PostLog({ character, posts, userPrefs, component, statuses, detached }: PostLogProps) {
-    // Guard clauses
-    statuses.map((status) => {
-        if (status === 500) {
-            return characterErrMessage("Error getting posts from the server");
-        }
-    });
+export function PostLog({ character, posts, userPrefs, component, detached }: PostLogProps) {
     if (posts.length === 0) {
         return characterErrMessage("Oops! Looks like there are no posts to show");
     }

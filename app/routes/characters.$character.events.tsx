@@ -1,13 +1,7 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
-import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { useOutletContext } from "react-router-dom";
-import { format, parseISO, isSameDay, isToday, addDays } from "date-fns";
-import { useEffect } from "react";
+import { format, isSameDay, isToday, addDays } from "date-fns";
 
 import type { Cookie } from "../utils/cookies";
-import { prefs } from "../utils/cookies";
-import { api, endpoints } from "../utils/api";
 import { characterErrMessage } from "../utils/errors";
 import { WarningDualText } from "../components/warnings";
 import type { OutletContextFromCharacter } from "./characters.$character";
@@ -19,43 +13,11 @@ export type Event = {
     content: string;
 };
 
-export async function loader({ params, request }: LoaderFunctionArgs) {
-    let eventData: Event[], eventStatus: number;
-    try {
-        const response = await api().get(endpoints.characterEvents(params.character!));
-        eventData = await response.data;
-        eventStatus = response.status;
-    } catch (error) {
-        eventData = [];
-        eventStatus = 500;
-    }
-    const cookieHeader = request.headers.get("Cookie");
-    const cookie = (await prefs.parse(cookieHeader)) || {};
-    return json({ events: { data: eventData, status: eventStatus }, userPrefs: { debug: cookie.debug } });
-}
-
 export default function Events() {
-    const loaderData = useLoaderData<typeof loader>();
-    const events = loaderData.events.data as Event[];
-    const userPrefs = loaderData.userPrefs as Cookie;
-    const { character, detached } = useOutletContext<OutletContextFromCharacter>();
-
-    // Revalidate the events every minute
-    let { revalidate } = useRevalidator();
-    useEffect(() => {
-        let id = setInterval(revalidate, 60000);
-        return () => clearInterval(id);
-    }, [revalidate]);
-
+    const { userPrefs, character, messages, posts, events, detached } = useOutletContext<OutletContextFromCharacter>();
     return (
         <div className="container mx-auto max-w-2xl">
-            <EventLog
-                events={events}
-                userPrefs={userPrefs}
-                component={false}
-                statuses={[loaderData.events.status]}
-                detached={detached}
-            />
+            <EventLog events={events} userPrefs={userPrefs} component={false} detached={detached} />
         </div>
     );
 }
@@ -64,17 +26,11 @@ interface EventLogProps {
     events: Event[];
     userPrefs: Cookie;
     component: boolean;
-    statuses: number[];
     detached: boolean;
 }
 
-export function EventLog({ events, userPrefs, component, statuses, detached }: EventLogProps) {
+export function EventLog({ events, userPrefs, component, detached }: EventLogProps) {
     // Guard clauses
-    statuses.map((status) => {
-        if (status === 500) {
-            return characterErrMessage("Error getting events from the server");
-        }
-    });
     if (events.length === 0) {
         return characterErrMessage("Oops! Looks like there are no events to show");
     }
