@@ -14,23 +14,12 @@ import { api, endpoints } from "../utils/api";
 export interface OutletContextFromCharacter {
     userPrefs: Cookie;
     character: Character;
-    messages: Message[];
     posts: Post[];
     events: Event[];
     detached: boolean;
 }
 
 export async function loader({ params }: LoaderFunctionArgs) {
-    let messageData: Message[], messageStatus: number;
-    // temporary, threads will be dynamic
-    try {
-        const response = await api().get(endpoints.threadMessages("1"));
-        messageData = await response.data;
-        messageStatus = response.status;
-    } catch (error) {
-        messageData = [];
-        messageStatus = 500;
-    }
     let eventData: Event[], eventStatus: number;
     try {
         const response = await api().get(endpoints.characterEvents(params.character!));
@@ -52,7 +41,6 @@ export async function loader({ params }: LoaderFunctionArgs) {
     const response = await api().get(endpoints.detached());
     const detached = (await response.data) === "True";
     return json({
-        messages: { data: messageData, status: messageStatus },
         events: { data: eventData, status: eventStatus },
         posts: { data: postData, status: postStatus },
         detached,
@@ -68,7 +56,6 @@ export default function CharactersData() {
                 context={{
                     userPrefs,
                     character,
-                    messages: loaderData.messages.data as Message[],
                     posts: loaderData.posts.data as Post[],
                     events: loaderData.events.data as Event[],
                     detached: loaderData.detached,

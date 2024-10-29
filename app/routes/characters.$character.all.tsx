@@ -1,12 +1,35 @@
+import type { LoaderFunctionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { useOutletContext } from "react-router-dom";
+import { useLoaderData } from "@remix-run/react";
 
 import type { OutletContextFromCharacter } from "./characters.$character";
+import { api, endpoints } from "../utils/api";
 import { FullChat } from "./characters.$character.chat.$thread";
 import { PostLog } from "./characters.$character.posts";
 import { EventLog } from "./characters.$character.events";
+import type { Message } from "./characters.$character.chat.$thread";
+
+export async function loader({}: LoaderFunctionArgs) {
+    let messageData: Message[], messageStatus: number;
+    // temporary, threads will be dynamic
+    try {
+        const response = await api().get(endpoints.threadMessages("1"));
+        messageData = await response.data;
+        messageStatus = response.status;
+    } catch (error) {
+        messageData = [];
+        messageStatus = 500;
+    }
+    return json({
+        messages: { data: messageData, status: messageStatus },
+    });
+}
 
 export default function CharacterAll() {
-    const { userPrefs, character, messages, posts, events, detached } = useOutletContext<OutletContextFromCharacter>();
+    const loaderData = useLoaderData<typeof loader>();
+    const messages = loaderData.messages.data as Message[];
+    const { userPrefs, character, posts, events, detached } = useOutletContext<OutletContextFromCharacter>();
 
     return (
         <div>

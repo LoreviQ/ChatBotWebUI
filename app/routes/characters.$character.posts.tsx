@@ -19,7 +19,7 @@ export type Post = {
 };
 
 export default function Posts() {
-    const { userPrefs, character, messages, posts, events, detached } = useOutletContext<OutletContextFromCharacter>();
+    const { userPrefs, character, posts, events, detached } = useOutletContext<OutletContextFromCharacter>();
     return (
         <div className="container mx-auto max-w-2xl">
             <PostLog character={character} posts={posts} userPrefs={userPrefs} component={false} detached={detached} />

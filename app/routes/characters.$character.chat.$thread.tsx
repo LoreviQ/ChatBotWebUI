@@ -23,8 +23,19 @@ export type Message = {
 
 type FetcherType = ReturnType<typeof useFetcher<typeof action>>;
 
-export async function loader({ params, request }: LoaderFunctionArgs) {
+export async function loader({ params }: LoaderFunctionArgs) {
+    let messageData: Message[], messageStatus: number;
+    // temporary, threads will be dynamic
+    try {
+        const response = await api().get(endpoints.threadMessages("1"));
+        messageData = await response.data;
+        messageStatus = response.status;
+    } catch (error) {
+        messageData = [];
+        messageStatus = 500;
+    }
     return json({
+        messages: { data: messageData, status: messageStatus },
         params: params,
     });
 }
@@ -58,7 +69,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
 // Entry point for this endpoint
 export default function Chat() {
     const loaderData = useLoaderData<typeof loader>();
-    const { userPrefs, character, messages, posts, events, detached } = useOutletContext<OutletContextFromCharacter>();
+    const messages = loaderData.messages.data as Message[];
+    const { userPrefs, character, posts, events, detached } = useOutletContext<OutletContextFromCharacter>();
 
     return (
         <div className="container mx-auto max-w-2xl">
