@@ -124,7 +124,7 @@ export function FullChat({ character, messages, userPrefs, thread, statuses, det
     let processedMessages = messages.map((message) => {
         return {
             ...message,
-            timestamp: parseISO(message.timestamp + "Z"),
+            timestamp: new Date(message.timestamp),
         };
     });
     processedMessages = processedMessages.sort((a, b) => {

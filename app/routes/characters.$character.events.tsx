@@ -29,6 +29,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         eventData = [];
         eventStatus = 500;
     }
+    console.log("eventData", eventData);
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};
     return json({ events: { data: eventData, status: eventStatus }, userPrefs: { debug: cookie.debug } });
@@ -83,7 +84,7 @@ export function EventLog({ events, userPrefs, component, statuses, detached }: E
     let processedEvents = events.map((event) => {
         return {
             ...event,
-            timestamp: parseISO(event.timestamp + "Z"),
+            timestamp: new Date(event.timestamp),
         };
     });
     processedEvents = processedEvents.sort((a, b) => {

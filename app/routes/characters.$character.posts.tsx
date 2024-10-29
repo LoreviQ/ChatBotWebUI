@@ -91,7 +91,7 @@ export function PostLog({ character, posts, userPrefs, component, statuses, deta
     let processedPosts = posts.map((post) => {
         return {
             ...post,
-            timestamp: parseISO(post.timestamp + "Z"),
+            timestamp: new Date(post.timestamp),
         };
     });
     processedPosts = processedPosts.sort((a, b) => {
