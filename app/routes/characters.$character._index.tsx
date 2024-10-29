@@ -19,7 +19,7 @@ function CharacterDetails({ character }: CharacterDetailsProps) {
     return (
         <div className="flex flex-col mt-20 mx-auto max-w-4xl">
             <div className="px-5 pt-5 flex justify-center space-x-4">
-                <Link to={`/characters/${character.path_name}/chat/1`}>
+                <Link to={`/characters/${character.path_name}/chat/`}>
                     <CharacterOutlineButton text="Chat!" />
                 </Link>
                 <Link to={`/characters/${character.path_name}/posts`}>

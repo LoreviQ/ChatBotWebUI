@@ -7,7 +7,6 @@ import type { OutletContextFromCharacters } from "./characters";
 import type { Character } from "./characters";
 import type { Post } from "./characters.$character.posts";
 import type { Event } from "./characters.$character.events";
-import type { Message } from "./characters.$character.chat.$thread";
 import type { Cookie } from "../utils/cookies";
 import { api, endpoints } from "../utils/api";
 
