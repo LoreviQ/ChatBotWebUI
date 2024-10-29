@@ -3,7 +3,6 @@ import axios from "axios";
 const API_VERSION = "v1";
 
 export function api() {
-    console.log("making requests to: ", process.env.API_URL);
     return axios.create({
         baseURL: process.env.API_URL,
     });
