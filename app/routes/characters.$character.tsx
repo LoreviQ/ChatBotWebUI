@@ -20,10 +20,6 @@ export interface OutletContextFromCharacter {
     detached: boolean;
 }
 
-interface LoaderData {
-    detached: boolean;
-}
-
 export async function loader({ params }: LoaderFunctionArgs) {
     let messageData: Message[], messageStatus: number;
     // temporary, threads will be dynamic
