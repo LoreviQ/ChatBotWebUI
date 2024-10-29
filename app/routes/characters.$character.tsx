@@ -8,18 +8,18 @@ import { api, endpoints } from "../utils/api";
 
 export interface OutletContextFromCharacter {
     character: Character;
-    detatched: boolean;
+    detached: boolean;
 }
 
 interface LoaderData {
-    detatched: boolean;
+    detached: boolean;
 }
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-    const response = await api().get(endpoints.detatched());
-    const detatched = (await response.data) === "True";
+    const response = await api().get(endpoints.detached());
+    const detached = (await response.data) === "True";
     return json({
-        detatched,
+        detached,
     });
 }
 
@@ -28,7 +28,7 @@ export default function CharactersData() {
     const loaderData = useLoaderData<LoaderData>();
     return (
         <div>
-            <Outlet context={{ character, detatched: loaderData.detatched }} />
+            <Outlet context={{ character, detached: loaderData.detached }} />
         </div>
     );
 }

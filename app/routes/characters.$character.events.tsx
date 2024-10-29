@@ -38,7 +38,7 @@ export default function Events() {
     const loaderData = useLoaderData<typeof loader>();
     const events = loaderData.events.data as Event[];
     const userPrefs = loaderData.userPrefs as Cookie;
-    const { character, detatched } = useOutletContext<OutletContextFromCharacter>();
+    const { character, detached } = useOutletContext<OutletContextFromCharacter>();
 
     // Revalidate the events every minute
     let { revalidate } = useRevalidator();
@@ -54,7 +54,7 @@ export default function Events() {
                 userPrefs={userPrefs}
                 component={false}
                 statuses={[loaderData.events.status]}
-                detatched={detatched}
+                detached={detached}
             />
         </div>
     );
@@ -65,10 +65,10 @@ interface EventLogProps {
     userPrefs: Cookie;
     component: boolean;
     statuses: number[];
-    detatched: boolean;
+    detached: boolean;
 }
 
-export function EventLog({ events, userPrefs, component, statuses, detatched }: EventLogProps) {
+export function EventLog({ events, userPrefs, component, statuses, detached }: EventLogProps) {
     // Guard clauses
     statuses.map((status) => {
         if (status === 500) {
@@ -120,9 +120,9 @@ export function EventLog({ events, userPrefs, component, statuses, detatched }: 
                     );
                 })}
             </div>
-            {detatched && (
+            {detached && (
                 <WarningDualText
-                    text1="The API is running in detatched mode."
+                    text1="The API is running in detached mode."
                     text2="New events will not be generated."
                 />
             )}

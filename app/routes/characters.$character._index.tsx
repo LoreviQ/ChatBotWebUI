@@ -7,7 +7,7 @@ import { imageURL } from "../utils/api";
 import { CharacterOutlineButton } from "../components/buttons";
 
 export default function CharactersData() {
-    const { character, detatched } = useOutletContext<OutletContextFromCharacter>();
+    const { character, detached } = useOutletContext<OutletContextFromCharacter>();
     return <CharacterDetails character={character} />;
 }
 

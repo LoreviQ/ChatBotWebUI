@@ -72,7 +72,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 // Entry point for this endpoint
 export default function Chat() {
     const loaderData = useLoaderData<typeof loader>();
-    const { character, detatched } = useOutletContext<OutletContextFromCharacter>();
+    const { character, detached } = useOutletContext<OutletContextFromCharacter>();
     const messages = loaderData.messages.data as Message[];
     const userPrefs = loaderData.userPrefs as Cookie;
 
@@ -91,7 +91,7 @@ export default function Chat() {
                 userPrefs={userPrefs}
                 thread={loaderData.params.thread!}
                 statuses={[loaderData.messages.status]}
-                detatched={detatched}
+                detached={detached}
             />
         </div>
     );
@@ -104,9 +104,9 @@ interface FullChatProps {
     userPrefs: Cookie;
     thread: string;
     statuses: number[];
-    detatched: boolean;
+    detached: boolean;
 }
-export function FullChat({ character, messages, userPrefs, thread, statuses, detatched }: FullChatProps) {
+export function FullChat({ character, messages, userPrefs, thread, statuses, detached }: FullChatProps) {
     // Guard clauses
     statuses.map((status) => {
         if (status === 500) {
@@ -185,9 +185,9 @@ export function FullChat({ character, messages, userPrefs, thread, statuses, det
                 })}
             </div>
             <IsTypingMessage isTyping={isTyping} character={character.name} />
-            {detatched ? (
+            {detached ? (
                 <WarningDualText
-                    text1="The API is running in detatched mode."
+                    text1="The API is running in detached mode."
                     text2="Messages can be sent but responses will not be generated."
                 />
             ) : (

@@ -20,7 +20,7 @@ export const endpoints = {
     login: () => `${API_VERSION}/login`,
     users: () => `${API_VERSION}/users`,
     readiness: () => `${API_VERSION}/readiness`,
-    detatched: () => `${API_VERSION}/detatched`,
+    detached: () => `${API_VERSION}/detached`,
 };
 
 export function imageURL(path: string) {

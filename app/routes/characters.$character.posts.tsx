@@ -43,7 +43,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 export default function Posts() {
     const loaderData = useLoaderData<typeof loader>();
-    const { character, detatched } = useOutletContext<OutletContextFromCharacter>();
+    const { character, detached } = useOutletContext<OutletContextFromCharacter>();
     const posts = loaderData.posts.data as Post[];
     const userPrefs = loaderData.userPrefs as Cookie;
     const statuses = [loaderData.posts.status];
@@ -62,7 +62,7 @@ export default function Posts() {
                 userPrefs={userPrefs}
                 component={false}
                 statuses={statuses}
-                detatched={detatched}
+                detached={detached}
             />
         </div>
     );
@@ -74,10 +74,10 @@ interface PostLogProps {
     userPrefs: Cookie;
     component: boolean;
     statuses: number[];
-    detatched: boolean;
+    detached: boolean;
 }
 
-export function PostLog({ character, posts, userPrefs, component, statuses, detatched }: PostLogProps) {
+export function PostLog({ character, posts, userPrefs, component, statuses, detached }: PostLogProps) {
     // Guard clauses
     statuses.map((status) => {
         if (status === 500) {
@@ -123,9 +123,9 @@ export function PostLog({ character, posts, userPrefs, component, statuses, deta
                     return <TextPost key={index} post={post} character={character} index={index} />;
                 })}
             </div>
-            {detatched && (
+            {detached && (
                 <WarningDualText
-                    text1="The API is running in detatched mode."
+                    text1="The API is running in detached mode."
                     text2="New posts will not be generated."
                 />
             )}
