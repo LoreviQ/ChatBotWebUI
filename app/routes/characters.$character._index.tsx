@@ -1,5 +1,9 @@
 import { Link } from "@remix-run/react";
 import { useOutletContext } from "react-router-dom";
+import { useState } from "react";
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faImage } from "@fortawesome/free-solid-svg-icons";
 
 import type { Character } from "./characters";
 import type { OutletContextFromCharacter } from "./characters.$character";
@@ -16,6 +20,7 @@ interface CharacterDetailsProps {
     character: Character;
 }
 function CharacterDetails({ character }: CharacterDetailsProps) {
+    const [imageError, setImageError] = useState(false);
     return (
         <div className="flex flex-col mt-20 mx-auto max-w-4xl">
             <div className="px-5 pt-5 flex justify-center space-x-4">
@@ -39,7 +44,22 @@ function CharacterDetails({ character }: CharacterDetailsProps) {
                 </Link>
             </div>
             <div className="flex items-center">
-                <img className="p-5" src={imageURL(character.profile_path)} />
+                <div className="p-5 w-80 h-80">
+                    {imageError ? (
+                        <div className="w-full h-full flex flex-col justify-center items-center bg-black/30 rounded-3xl">
+                            <p>Woops!</p>
+                            <p>{character.name} doesn't have an image yet!</p>
+                            <p>Click here to upload one!</p>
+                            <FontAwesomeIcon className="" icon={faImage} />
+                        </div>
+                    ) : (
+                        <img
+                            className="object-cover"
+                            src={imageURL(character.profile_path)}
+                            onError={() => setImageError(true)}
+                        />
+                    )}
+                </div>
                 <div className="p-5 flex flex-col text-xl space-y-2">
                     <p>Age: {character.age}</p>
                     <p>Height: {character.height}</p>
