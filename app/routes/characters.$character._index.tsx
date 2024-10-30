@@ -19,9 +19,6 @@ function CharacterDetails({ character }: CharacterDetailsProps) {
     return (
         <div className="flex flex-col mt-20 mx-auto max-w-4xl">
             <div className="px-5 pt-5 flex justify-center space-x-4">
-                <Link to={`/characters/${character.path_name}/chat/`}>
-                    <CharacterOutlineButton text="Chat!" />
-                </Link>
                 <Link to={`/characters/${character.path_name}/posts`}>
                     <CharacterOutlineButton text="Posts!" />
                 </Link>
@@ -30,6 +27,15 @@ function CharacterDetails({ character }: CharacterDetailsProps) {
                 </Link>
                 <Link to={`/characters/${character.path_name}/all`}>
                     <CharacterOutlineButton text="All?" />
+                </Link>
+                <Link to={`/characters/${character.path_name}/chat/`}>
+                    <CharacterOutlineButton text="Chat!" />
+                </Link>
+                <Link to={`/characters/${character.path_name}/chats/new`}>
+                    <CharacterOutlineButton text="New Chat!" />
+                </Link>
+                <Link to={`/characters/${character.path_name}/chats/new`}>
+                    <CharacterOutlineButton text="previous chats" />
                 </Link>
             </div>
             <div className="flex items-center">
