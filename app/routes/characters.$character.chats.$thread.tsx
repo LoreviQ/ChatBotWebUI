@@ -27,7 +27,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     let messageData: Message[], messageStatus: number;
     // temporary, threads will be dynamic
     try {
-        const response = await api().get(endpoints.threadMessages("1"));
+        const response = await api().get(endpoints.threadMessages(params.thread!));
         messageData = await response.data;
         messageStatus = response.status;
     } catch (error) {
@@ -94,13 +94,7 @@ interface FullChatProps {
     detached: boolean;
 }
 export function FullChat({ character, messages, userPrefs, thread, detached }: FullChatProps) {
-    // Guard clauses
-    if (messages.length === 0) {
-        return characterErrMessage(`Send a message to ${character.name}!`);
-    }
-
     const fetcher = useChatFetcher(character.name, thread);
-    let lastDate: Date | null = null;
 
     // process message data
     let processedMessages = messages.map((message) => {
@@ -144,27 +138,16 @@ export function FullChat({ character, messages, userPrefs, thread, detached }: F
     return (
         <div className="flex flex-col h-screen">
             <div className="overflow-auto flex flex-grow flex-col-reverse custom-scrollbar pt-20">
-                {processedMessages.map((message, index) => {
-                    const scheduledMessage = message.timestamp > new Date();
-                    if (scheduledMessage && !userPrefs.debug) {
-                        return null;
-                    }
-                    const showDateHeader = !lastDate || !isSameDay(lastDate, message.timestamp);
-                    const isLastMessage = index === messages.length - 1;
-                    lastDate = message.timestamp;
-                    return (
-                        <MessageBox
-                            key={index}
-                            index={index}
-                            character={character.name}
-                            message={message}
-                            fetcher={fetcher}
-                            scheduledMessage={scheduledMessage}
-                            showDateHeader={showDateHeader}
-                            isLastMessage={isLastMessage}
-                        />
-                    );
-                })}
+                {messages.length === 0 ? (
+                    characterErrMessage(`Send a message to ${character.name}!`)
+                ) : (
+                    <MessageBoxMap
+                        messages={processedMessages}
+                        character={character.name}
+                        fetcher={fetcher}
+                        userPrefs={userPrefs}
+                    />
+                )}
             </div>
             <IsTypingMessage isTyping={isTyping} character={character.name} />
             {detached ? (
@@ -183,6 +166,37 @@ export function FullChat({ character, messages, userPrefs, thread, detached }: F
             />
         </div>
     );
+}
+
+interface MessageBoxMapProps {
+    messages: Message[];
+    character: string;
+    fetcher: any;
+    userPrefs: Cookie;
+}
+function MessageBoxMap({ messages, character, fetcher, userPrefs }: MessageBoxMapProps) {
+    let lastDate: Date | null = null;
+    return messages.map((message, index) => {
+        const scheduledMessage = message.timestamp > new Date();
+        if (scheduledMessage && !userPrefs.debug) {
+            return null;
+        }
+        const showDateHeader = !lastDate || !isSameDay(lastDate, message.timestamp);
+        const isLastMessage = index === messages.length - 1;
+        lastDate = message.timestamp as Date;
+        return (
+            <MessageBox
+                key={index}
+                index={index}
+                character={character}
+                message={message}
+                fetcher={fetcher}
+                scheduledMessage={scheduledMessage}
+                showDateHeader={showDateHeader}
+                isLastMessage={isLastMessage}
+            />
+        );
+    });
 }
 
 // Renders a single message box
