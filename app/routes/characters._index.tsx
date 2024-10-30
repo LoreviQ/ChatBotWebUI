@@ -1,7 +1,9 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { api, endpoints, imageURL } from "../utils/api";
 import { json } from "@remix-run/node";
+import { useState } from "react";
+
+import { api, endpoints, imageURL } from "../utils/api";
 import type { Character } from "./characters";
 
 export async function loader({}: LoaderFunctionArgs) {
@@ -41,6 +43,7 @@ interface CharacterCardProps {
     character: Character;
 }
 export function CharacterCard({ character }: CharacterCardProps) {
+    const [imageError, setImageError] = useState(false);
     return (
         <Link to={`/characters/${character.path_name}`}>
             <div
@@ -50,11 +53,14 @@ export function CharacterCard({ character }: CharacterCardProps) {
                 style={{ borderColor: character.favorite_colour }}
             >
                 <div className="flex items-center">
-                    <img
-                        className="rounded-full w-20 me-8 border-2"
-                        style={{ borderColor: character.favorite_colour }}
-                        src={imageURL(character.profile_path)}
-                    />
+                    {!imageError && (
+                        <img
+                            className="rounded-full w-20 me-8 border-2"
+                            style={{ borderColor: character.favorite_colour }}
+                            src={imageURL(character.profile_path)}
+                            onError={() => setImageError(true)}
+                        />
+                    )}
                     <h2 className="text-4xl font-semibold" style={{ color: character.favorite_colour }}>
                         {character.name}
                     </h2>
