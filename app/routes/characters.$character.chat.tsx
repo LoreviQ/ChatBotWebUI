@@ -9,6 +9,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const query = `username=Oliver&char_path=${params.character!}&limit=1`;
     const response = await api().get(endpoints.threads(query));
     const data = await response.data;
+    if (data.length === 0) {
+        return redirect(`${baseUrl}s/new`);
+    }
     const thread_id = data[0].id;
     return redirect(`${baseUrl}s/${thread_id}`);
 }
