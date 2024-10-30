@@ -66,15 +66,20 @@ export function Header({ title, userPrefs, titleLink, loggedIn, showBackButton }
                             </label>
                         </fetcher.Form>
                     </div>
-                    {loggedIn ? (
-                        <fetcher.Form method="post" action="/logout">
-                            <CharacterOutlineButton text="Logout" />
-                        </fetcher.Form>
-                    ) : (
-                        <Link to="/login">
-                            <CharacterOutlineButton text="Login" />
+                    <div className="flex space-x-4">
+                        <Link to="/new">
+                            <CharacterOutlineButton text="New Character" />
                         </Link>
-                    )}
+                        {loggedIn ? (
+                            <fetcher.Form method="post" action="/logout">
+                                <CharacterOutlineButton text="Logout" />
+                            </fetcher.Form>
+                        ) : (
+                            <Link to="/login">
+                                <CharacterOutlineButton text="Login" />
+                            </Link>
+                        )}
+                    </div>
                 </div>
                 <Link
                     to={titleLink}
