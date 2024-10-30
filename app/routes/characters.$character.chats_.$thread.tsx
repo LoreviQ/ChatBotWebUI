@@ -306,7 +306,12 @@ function UserInputMessageBox({ fetcher, character, textareaValue, setTextareaVal
                 <textarea
                     name="chat"
                     rows={4}
-                    className="block p-2.5 w-full text-sm rounded-lg border text-gray-900 bg-white border-character dark:bg-bg-dark dark:placeholder-text-muted-dark dark:text-text-dark"
+                    className="
+                        block p-2.5 w-full text-sm rounded-lg border 
+                        border-character 
+                        bg-bg-dark placeholder-text-muted-dark text-text-dark
+                        focus:border-character
+                    "
                     placeholder={placeholder_message}
                     value={textareaValue}
                     onChange={(e) => setTextareaValue(e.target.value)}
