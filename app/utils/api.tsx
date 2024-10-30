@@ -10,6 +10,7 @@ export function api() {
 
 export const endpoints = {
     threads: (query = "") => `${API_VERSION}/threads?${query}`,
+    usersThreads: (username: string, query = "") => `${API_VERSION}/users/${username}/threads?${query}`,
     newThreadMessage: (thread_id: string) => `${API_VERSION}/threads/${thread_id}/message`,
     threadMessages: (thread_id: string) => `${API_VERSION}/threads/${thread_id}/messages`,
     message: (message_id: string, query = "") => `${API_VERSION}/messages/${message_id}?${query}`,

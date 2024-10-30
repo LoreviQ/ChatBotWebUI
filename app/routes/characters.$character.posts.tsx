@@ -117,7 +117,7 @@ function ImagePost({ post, character, index }: postProps) {
 // Renders a text post
 function TextPost({ post, character, index }: postProps) {
     return (
-        <div key={index} className="px-4">
+        <div className="px-4">
             <div className="flex pb-4  w-full">
                 <img className="rounded-full w-20 me-8" src={imageURL(character.profile_path)} alt={post.caption} />
                 <div className="flex flex-col justify-center">

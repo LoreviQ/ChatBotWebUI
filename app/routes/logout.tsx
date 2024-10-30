@@ -5,7 +5,7 @@ import { json } from "@remix-run/node";
 export async function action({ request }: ActionFunctionArgs) {
     const cookieHeader = request.headers.get("Cookie");
     const cookie = (await prefs.parse(cookieHeader)) || {};
-    cookie.jwt = "";
+    cookie.jwt = undefined;
     return json(null, {
         headers: {
             "Set-Cookie": await prefs.serialize(cookie),

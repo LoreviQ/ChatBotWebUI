@@ -5,10 +5,10 @@ import { useLoaderData } from "@remix-run/react";
 
 import type { OutletContextFromCharacter } from "./characters.$character";
 import { api, endpoints } from "../utils/api";
-import { FullChat } from "./characters.$character.chats.$thread";
+import { FullChat } from "./characters.$character.chats_.$thread";
 import { PostLog } from "./characters.$character.posts";
 import { EventLog } from "./characters.$character.events";
-import type { Message } from "./characters.$character.chats.$thread";
+import type { Message } from "./characters.$character.chats_.$thread";
 
 export async function loader({}: LoaderFunctionArgs) {
     let messageData: Message[], messageStatus: number;
