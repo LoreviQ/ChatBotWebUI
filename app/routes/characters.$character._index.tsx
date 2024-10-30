@@ -34,8 +34,8 @@ function CharacterDetails({ character }: CharacterDetailsProps) {
                 <Link to={`/characters/${character.path_name}/chats/new`}>
                     <CharacterOutlineButton text="New Chat!" />
                 </Link>
-                <Link to={`/characters/${character.path_name}/chats/new`}>
-                    <CharacterOutlineButton text="previous chats" />
+                <Link to={`/characters/${character.path_name}/chats/`}>
+                    <CharacterOutlineButton text="Previous chats" />
                 </Link>
             </div>
             <div className="flex items-center">
