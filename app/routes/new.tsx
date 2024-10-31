@@ -44,7 +44,7 @@ export async function action({ request }: ActionFunctionArgs) {
     };
     const response = await api().post(endpoints.characters(), payload);
     if (response.status === 200) {
-        return redirect(`characters/${response.data}`);
+        return redirect(`/characters/${response.data}`);
     }
 }
 

@@ -356,6 +356,6 @@ export function useChatFetcher(character: string, thread: string) {
     const fetcher = useFetcher<FetcherType>({
         key: `chat-${character}-${thread}`,
     });
-    fetcher.formAction = `/characters/${character}/chat/${thread}`;
+    fetcher.formAction = `/characters/${character}/chats/${thread}`;
     return fetcher;
 }
