@@ -6,6 +6,7 @@ import { formatDistanceToNow } from "date-fns";
 
 import type { OutletContextFromCharacter } from "./characters.$character";
 import { api, endpoints, imageURL } from "../utils/api";
+import { redirectIfNotLoggedIn } from "../utils/cookies";
 
 export type Threads = {
     id: number;
@@ -16,7 +17,11 @@ export type Threads = {
     recent_message: string;
 };
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
+    const _redirect = redirectIfNotLoggedIn(request);
+    if (_redirect) {
+        return _redirect;
+    }
     let threadData: Threads[], threadStatus: number;
     try {
         const query = `char_path=${params.character}`;
@@ -33,7 +38,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 }
 
 export default function Threads() {
-    const loaderData = useLoaderData<typeof loader>();
+    const loaderData = useLoaderData<typeof loader>()!;
     const threads = loaderData.threads.data as Threads[];
     const { userPrefs, character, posts, events, detached } = useOutletContext<OutletContextFromCharacter>();
 

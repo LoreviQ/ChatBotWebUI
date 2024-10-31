@@ -7,9 +7,11 @@ import { useOutletContext } from "react-router-dom";
 import { format, isSameDay, isToday, addDays, addSeconds } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
+
 import { characterErrMessage } from "../utils/errors";
 import { api, endpoints } from "../utils/api";
 import type { Cookie } from "../utils/cookies";
+import { redirectIfNotLoggedIn } from "../utils/cookies";
 import type { Character } from "./characters";
 import { WarningDualText } from "../components/warnings";
 import type { OutletContextFromCharacter } from "./characters.$character";
@@ -23,7 +25,11 @@ export type Message = {
 
 type FetcherType = ReturnType<typeof useFetcher<typeof action>>;
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
+    const _redirect = redirectIfNotLoggedIn(request);
+    if (_redirect) {
+        return _redirect;
+    }
     let messageData: Message[], messageStatus: number;
     // temporary, threads will be dynamic
     try {
@@ -68,7 +74,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
 // Entry point for this endpoint
 export default function Chat() {
-    const loaderData = useLoaderData<typeof loader>();
+    const loaderData = useLoaderData<typeof loader>()!;
     const messages = loaderData.messages.data as Message[];
     const { userPrefs, character, posts, events, detached } = useOutletContext<OutletContextFromCharacter>();
 
