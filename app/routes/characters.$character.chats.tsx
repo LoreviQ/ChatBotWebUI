@@ -18,7 +18,7 @@ export type Threads = {
 };
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-    const _redirect = redirectIfNotLoggedIn(request);
+    const _redirect = await redirectIfNotLoggedIn(request);
     if (_redirect) {
         return _redirect;
     }

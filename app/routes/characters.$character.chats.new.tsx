@@ -6,7 +6,7 @@ import { redirectIfNotLoggedIn } from "../utils/cookies";
 
 // /characters/{character}/chats/new creates a new thread then redirects to it
 export async function loader({ params, request }: LoaderFunctionArgs) {
-    const _redirect = redirectIfNotLoggedIn(request);
+    const _redirect = await redirectIfNotLoggedIn(request);
     if (_redirect) {
         return _redirect;
     }
