@@ -1,13 +1,13 @@
 import { Link } from "@remix-run/react";
 import { useOutletContext } from "react-router-dom";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faImage } from "@fortawesome/free-solid-svg-icons";
 
 import type { Character } from "./characters";
 import type { OutletContextFromCharacter } from "./characters.$character";
-import { imageURL } from "../utils/api";
+import { imageURL, endpoints, api, uploadFileToGCS } from "../utils/api";
 import { CharacterOutlineButton } from "../components/buttons";
 
 export default function CharactersData() {
@@ -20,7 +20,6 @@ interface CharacterDetailsProps {
     character: Character;
 }
 function CharacterDetails({ character }: CharacterDetailsProps) {
-    const [imageError, setImageError] = useState(false);
     return (
         <div className="flex flex-col mt-20 mx-auto max-w-4xl">
             <div className="px-5 pt-5 flex justify-center space-x-4">
@@ -44,22 +43,11 @@ function CharacterDetails({ character }: CharacterDetailsProps) {
                 </Link>
             </div>
             <div className="flex items-center">
-                <div className="p-5 w-80 h-80">
-                    {imageError ? (
-                        <div className="w-full h-full flex flex-col justify-center items-center bg-black/30 rounded-3xl">
-                            <p>Woops!</p>
-                            <p>{character.name} doesn't have an image yet!</p>
-                            <p>Click here to upload one!</p>
-                            <FontAwesomeIcon className="" icon={faImage} />
-                        </div>
-                    ) : (
-                        <img
-                            className="object-cover"
-                            src={imageURL(character.profile_path)}
-                            onError={() => setImageError(true)}
-                        />
-                    )}
-                </div>
+                <ImageBox
+                    imageURL={imageURL(character.profile_path)}
+                    charName={character.name}
+                    charPath={character.path_name}
+                />
                 <div className="p-5 flex flex-col text-xl space-y-2">
                     <p>Age: {character.age}</p>
                     <p>Height: {character.height}</p>
@@ -87,4 +75,77 @@ function CharacterDetails({ character }: CharacterDetailsProps) {
             ) : null}
         </div>
     );
+}
+
+interface ImageBoxProps {
+    imageURL: string;
+    charName: string;
+    charPath: string;
+}
+function ImageBox({ imageURL, charName, charPath }: ImageBoxProps) {
+    const [imageError, setImageError] = useState(true);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+    return (
+        <div className="p-5 w-80 h-80">
+            {imageError ? (
+                <div
+                    className="w-full h-full flex flex-col justify-center items-center bg-black/30 rounded-3xl"
+                    onClick={() => {
+                        fileInputRef.current?.click();
+                    }}
+                    style={{ cursor: "pointer" }}
+                >
+                    <p>Woops!</p>
+                    <p>{charName} doesn't have an image yet!</p>
+                    <p>Click here to upload one!</p>
+                    <FontAwesomeIcon className="" icon={faImage} />
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        style={{ display: "none" }}
+                        accept="image/*"
+                        onChange={(e) => uploadImage(e, charPath)}
+                    />
+                </div>
+            ) : (
+                <img className="object-cover" src={imageURL} onError={() => setImageError(true)} />
+            )}
+        </div>
+    );
+}
+
+async function uploadImage(event: React.ChangeEvent<HTMLInputElement>, charPath: string) {
+    console.log("Uploading image...");
+    const file = event.target.files?.[0];
+    if (!file) {
+        console.error("No file selected");
+        return;
+    }
+    try {
+        // Upload file to GCS
+        const result = await uploadFileToGCS(file);
+
+        // Prepare payload
+        const payload = {
+            profile_path: result,
+        };
+
+        // Update character profile
+        const response = await fetch(endpoints.character(charPath), {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        });
+
+        if (response.ok) {
+            console.log("File uploaded and character updated successfully");
+        } else {
+            console.error("Failed to update character profile", response.status);
+        }
+    } catch (error) {
+        console.error("Error uploading file or updating character profile", error);
+    }
 }
