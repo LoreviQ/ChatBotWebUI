@@ -83,11 +83,11 @@ interface ImageBoxProps {
     charPath: string;
 }
 function ImageBox({ imageURL, charName, charPath }: ImageBoxProps) {
-    const [imageError, setImageError] = useState(true);
+    const [imageError, setImageError] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     return (
-        <div className="p-5 w-80 h-80">
+        <div className="p-5 w-80 h-80 flex-shrink-0">
             {imageError ? (
                 <div
                     className="w-full h-full flex flex-col justify-center items-center bg-black/30 rounded-3xl"

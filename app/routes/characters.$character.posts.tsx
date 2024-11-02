@@ -11,10 +11,10 @@ import { WarningDualText } from "../components/warnings";
 export type Post = {
     id: number;
     timestamp: string | Date;
+    content: string;
     image_post: boolean;
-    description: string;
+    image_description: string;
     prompt: string;
-    caption: string;
     image_path: string;
 };
 
@@ -96,7 +96,7 @@ function ImagePost({ post, character, index }: postProps) {
     return (
         <div className="px-4">
             <div className="flex pb-4 w-full">
-                <img className="rounded-full w-20 me-8" src={imageURL(character.profile_path)} alt={post.caption} />
+                <img className="rounded-full w-20 me-8" src={imageURL(character.profile_path)} />
                 <div className="flex flex-col justify-center">
                     <p>{character.name}</p>
                     <p className="text-text-muted-dark">
@@ -105,10 +105,10 @@ function ImagePost({ post, character, index }: postProps) {
                 </div>
             </div>
             <div className="relative">
-                <img className="rounded-lg" src={imageURL(post.image_path)} alt={post.caption} />
+                <img className="rounded-lg" src={imageURL(post.image_path)} />
                 <div className="absolute bottom-0 left-0 w-full h-6 flex ">👍❤️😍🎉</div>
             </div>
-            <p className="pt-2 px-6" dangerouslySetInnerHTML={{ __html: formatPost(post.caption) }} />
+            <p className="pt-2 px-6" dangerouslySetInnerHTML={{ __html: formatPost(post.content) }} />
             {index != 0 && <hr className="mx-4 my-6 border-text-muted-dark" />}
         </div>
     );
@@ -119,7 +119,7 @@ function TextPost({ post, character, index }: postProps) {
     return (
         <div className="px-4">
             <div className="flex pb-4  w-full">
-                <img className="rounded-full w-20 me-8" src={imageURL(character.profile_path)} alt={post.caption} />
+                <img className="rounded-full w-20 me-8" src={imageURL(character.profile_path)} />
                 <div className="flex flex-col justify-center">
                     <p>{character.name}</p>
                     <p className="text-text-muted-dark">
@@ -127,7 +127,7 @@ function TextPost({ post, character, index }: postProps) {
                     </p>
                 </div>
             </div>
-            <p className="pt-2 px-6" dangerouslySetInnerHTML={{ __html: formatPost(post.description) }} />
+            <p className="pt-2 px-6" dangerouslySetInnerHTML={{ __html: formatPost(post.content) }} />
             {index != 0 && <hr className="mx-4 my-6 border-text-muted-dark" />}
         </div>
     );
