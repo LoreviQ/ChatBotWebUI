@@ -8,6 +8,13 @@ import { imageURL } from "../utils/api";
 import { characterErrMessage } from "../utils/errors";
 import { WarningDualText } from "../components/warnings";
 
+export type Comment = {
+    id: number;
+    timestamp: string | Date;
+    content: string;
+    posted_by: Character;
+};
+
 export type Post = {
     id: number;
     timestamp: string | Date;
@@ -16,6 +23,7 @@ export type Post = {
     image_description: string;
     prompt: string;
     image_path: string;
+    comments: Comment[];
 };
 
 export default function Posts() {
