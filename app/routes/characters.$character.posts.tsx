@@ -25,6 +25,7 @@ export type Post = {
     image_description: string;
     prompt: string;
     image_path: string;
+    comments_count: number;
     comments: Comment[];
 };
 
@@ -132,28 +133,30 @@ function Post({ post, index }: PostProps) {
     return (
         <div>
             {index != 0 && <hr className="mt-4 border-text-muted-dark" />}
-            <div className="flex pe-2 items-center">
-                <img className="rounded-full w-10 h-10 m-4" src={imageURL(post.posted_by.profile_path)} />
-                <UserStamp
-                    username={post.posted_by.name}
-                    path_name={post.posted_by.path_name}
-                    timestamp={post.timestamp}
-                />
-            </div>
-            <PostContent className="ps-16" text={post.content} />
-            <div className="p-4">
-                {post.image_post && post.image_path && (
-                    <div className="relative">
-                        <img className="rounded-lg" src={imageURL(post.image_path)} />
-                        <div className="absolute bottom-0 left-0 w-full h-6 flex ">👍❤️😍🎉</div>
-                    </div>
-                )}
-            </div>
-            <div className="ps-8">
-                {post.comments.length > 0
-                    ? post.comments.map((comment, index) => <CommentBox key={index} comment={comment} />)
-                    : null}
-            </div>
+            <UserStamp
+                profile_path={post.posted_by.profile_path}
+                username={post.posted_by.name}
+                path_name={post.posted_by.path_name}
+                timestamp={post.timestamp}
+            />
+            <PostContent className="ps-16 pe-4" text={post.content} />
+            {post.image_post && post.image_path && <PostImage image_path={post.image_path} />}
+            <CommentLog comments_count={post.comments_count} comments={post.comments} />
+        </div>
+    );
+}
+
+interface CommentLogProps {
+    comments_count: number;
+    comments: Comment[];
+}
+
+function CommentLog({ comments_count, comments }: CommentLogProps) {
+    return (
+        <div className="ps-8">
+            {comments.length > 0
+                ? comments.map((comment, index) => <CommentBox key={index} comment={comment} />)
+                : null}
         </div>
     );
 }
@@ -165,35 +168,37 @@ interface CommentProps {
 function CommentBox({ comment }: CommentProps) {
     return (
         <div>
-            <div className="flex pe-2 items-center">
-                <img className="rounded-full w-10 h-10 m-4" src={imageURL(comment.posted_by.profile_path)} />
-                <UserStamp
-                    username={comment.posted_by.name}
-                    path_name={comment.posted_by.path_name}
-                    timestamp={comment.timestamp}
-                />
-            </div>
-            <PostContent className="ps-16" text={comment.content} />
+            <UserStamp
+                profile_path={comment.posted_by.profile_path}
+                username={comment.posted_by.name}
+                path_name={comment.posted_by.path_name}
+                timestamp={comment.timestamp}
+            />
+            <PostContent className="ps-16 pe-4" text={comment.content} />
         </div>
     );
 }
 
 // Custom formatting for user info
 interface UserStampProps {
+    profile_path: string;
     username: string;
     path_name: string;
     timestamp: string | Date;
 }
-function UserStamp({ username, path_name, timestamp }: UserStampProps) {
+function UserStamp({ profile_path, username, path_name, timestamp }: UserStampProps) {
     return (
-        <div className="flex h-10 w-full mb-4 items-end space-x-1">
-            <Link className="flex space-x-1" to={`/characters/${path_name}`}>
-                <p className="font-bold">{username}</p>
-                <p className="text-text-muted-dark">{`@${path_name}`}</p>
-            </Link>
-            <p className="text-text-muted-dark">
-                {`· ${formatDistanceToNow(new Date(timestamp), { addSuffix: true })}`}
-            </p>
+        <div className="flex pe-2 items-center">
+            <img className="rounded-full w-10 h-10 m-4" src={imageURL(profile_path)} />
+            <div className="flex h-10 w-full mb-4 items-end space-x-1">
+                <Link className="flex space-x-1" to={`/characters/${path_name}`}>
+                    <p className="font-bold">{username}</p>
+                    <p className="text-text-muted-dark">{`@${path_name}`}</p>
+                </Link>
+                <p className="text-text-muted-dark">
+                    {`· ${formatDistanceToNow(new Date(timestamp), { addSuffix: true })}`}
+                </p>
+            </div>
         </div>
     );
 }
@@ -216,6 +221,20 @@ function LoadingMorePosts() {
             <hr className="pt-2 border-text-muted-dark" />
             <div className="flex justify-center">
                 <p>Loading more posts...</p>
+            </div>
+        </div>
+    );
+}
+
+interface PostImageProps {
+    image_path: string;
+}
+function PostImage({ image_path }: PostImageProps) {
+    return (
+        <div className="p-4">
+            <div className="relative">
+                <img className="rounded-lg" src={imageURL(image_path)} />
+                <div className="absolute bottom-0 left-0 w-full h-6 flex ">👍❤️😍🎉</div>
             </div>
         </div>
     );
