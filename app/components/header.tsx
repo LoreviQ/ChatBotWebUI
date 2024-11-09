@@ -4,7 +4,7 @@ import { CharacterOutlineButton } from "../components/buttons";
 import type { Cookie } from "../utils/cookies";
 import { useFetcher, useSubmit, Link } from "@remix-run/react";
 
-// Rendrs the header of the page
+// Renders the header of the page
 interface headerProps {
     title: string;
     userPrefs: Cookie;

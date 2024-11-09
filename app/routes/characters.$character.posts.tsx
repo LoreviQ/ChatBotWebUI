@@ -112,7 +112,9 @@ function ImagePost({ post, index }: PostProps) {
             <div className="flex pb-4 w-full">
                 <img className="rounded-full w-20 me-8" src={imageURL(post.posted_by.profile_path)} />
                 <div className="flex flex-col justify-center">
-                    <p className="font-bold">{post.posted_by.name}</p>
+                    <Link to={`/characters/${post.posted_by.path_name}`}>
+                        <p className="font-bold">{post.posted_by.name}</p>
+                    </Link>
                     <p className="text-text-muted-dark">
                         {formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}
                     </p>
@@ -134,7 +136,9 @@ function TextPost({ post, index }: PostProps) {
             <div className="flex pb-4  w-full">
                 <img className="rounded-full w-20 h-20 me-8" src={imageURL(post.posted_by.profile_path)} />
                 <div className="flex flex-col justify-center">
-                    <p className="font-bold">{post.posted_by.name}</p>
+                    <Link to={`/characters/${post.posted_by.path_name}`}>
+                        <p className="font-bold">{post.posted_by.name}</p>
+                    </Link>
                     <p className="text-text-muted-dark">
                         {formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}
                     </p>
