@@ -43,7 +43,9 @@ export default function feed() {
                     fetchMorePosts(offset);
                 }
             },
-            { threshold: 0 }
+            {
+                threshold: 1,
+            }
         );
         if (loaderRef.current) {
             observer.observe(loaderRef.current);

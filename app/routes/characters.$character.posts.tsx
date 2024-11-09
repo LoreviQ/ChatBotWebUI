@@ -111,7 +111,7 @@ export function PostLog({
                         return <Post key={index} post={post} index={index} />;
                     })}
                 </div>
-                {load && <div ref={loaderRef}>{loading && <p>Loading more posts...</p>}</div>}
+                {load && <div ref={loaderRef}>{loading && <LoadingMorePosts />}</div>}
             </div>
             {detached && (
                 <WarningDualText
@@ -206,4 +206,16 @@ function PostContent({ text }: PostContentProps) {
     text = text.replace(/(#\w+)/g, "<strong>$1</strong>");
     text = text.replace(/^"|"$/g, "");
     return <p className="" dangerouslySetInnerHTML={{ __html: text }} />;
+}
+
+// Loading more posts box
+function LoadingMorePosts() {
+    return (
+        <div className="py-2">
+            <hr className="pt-2 border-text-muted-dark" />
+            <div className="flex justify-center">
+                <p>Loading more posts...</p>
+            </div>
+        </div>
+    );
 }
