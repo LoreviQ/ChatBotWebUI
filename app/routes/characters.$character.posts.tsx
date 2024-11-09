@@ -165,9 +165,7 @@ function Post({ post, index }: PostProps) {
     // If the commentState is ShowAll and the number of comments is less
     // than the total number of comments, fetch the remaining comments
     useEffect(() => {
-        console.log("commentState:", commentState);
         if (commentState === CommentState.ShowAll && post.comments_count > comments.length) {
-            console.log("Fetching more comments");
             expandComments(String(post.id));
         }
     }, [commentState]);
