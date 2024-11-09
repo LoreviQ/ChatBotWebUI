@@ -65,7 +65,7 @@ export function CharacterCard({ character }: CharacterCardProps) {
                         {character.name}
                     </h2>
                 </div>
-                <p className="ps-4  pt-4">{character.description}</p>
+                <p className="ps-4 pt-4 break-words line-clamp-3">{character.description}</p>
             </div>
         </Link>
     );
