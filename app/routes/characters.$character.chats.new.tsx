@@ -16,6 +16,5 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     };
     const response = await api().post(endpoints.threads(), payload);
     const data = await response.data;
-    console.log(data);
     return redirect(`/characters/${params.character!}/chats/${data}`);
 }

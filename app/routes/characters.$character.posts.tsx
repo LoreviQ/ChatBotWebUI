@@ -1,5 +1,6 @@
 import { formatDistanceToNow } from "date-fns";
 import { useOutletContext } from "react-router-dom";
+import { Link } from "@remix-run/react";
 
 import type { Cookie } from "../utils/cookies";
 import type { Character } from "./characters";
@@ -18,6 +19,7 @@ export type Comment = {
 export type Post = {
     id: number;
     timestamp: string | Date;
+    posted_by: Character;
     content: string;
     image_post: boolean;
     image_description: string;
@@ -30,20 +32,19 @@ export default function Posts() {
     const { userPrefs, character, posts, events, detached } = useOutletContext<OutletContextFromCharacter>();
     return (
         <div className="container mx-auto max-w-2xl">
-            <PostLog character={character} posts={posts} userPrefs={userPrefs} component={false} detached={detached} />
+            <PostLog posts={posts} userPrefs={userPrefs} hideSidebar={false} detached={detached} />
         </div>
     );
 }
 
 interface PostLogProps {
-    character: Character;
     posts: Post[];
     userPrefs: Cookie;
-    component: boolean;
+    hideSidebar: boolean;
     detached: boolean;
 }
 
-export function PostLog({ character, posts, userPrefs, component, detached }: PostLogProps) {
+export function PostLog({ posts, userPrefs, hideSidebar: component, detached }: PostLogProps) {
     if (posts.length === 0) {
         return characterErrMessage("Oops! Looks like there are no posts to show");
     }
@@ -74,7 +75,7 @@ export function PostLog({ character, posts, userPrefs, component, detached }: Po
                     if (scheduledPost && !userPrefs.debug) {
                         return null;
                     }
-                    return <PostManager key={index} post={post} character={character} index={index} />;
+                    return <PostManager key={index} post={post} index={index} />;
                 })}
             </div>
             {detached && (
@@ -89,18 +90,13 @@ export function PostLog({ character, posts, userPrefs, component, detached }: Po
 
 interface PostProps {
     post: Post;
-    character: Character;
     index: number;
 }
 // Renders either an image or text post - with comments
-function PostManager({ post, character, index }: PostProps) {
+function PostManager({ post, index }: PostProps) {
     return (
-        <div className="space-y-2">
-            {post.image_post ? (
-                <ImagePost post={post} character={character} index={index} />
-            ) : (
-                <TextPost post={post} character={character} index={index} />
-            )}
+        <div className="space-y-2 my-4">
+            {post.image_post ? <ImagePost post={post} index={index} /> : <TextPost post={post} index={index} />}
             {post.comments.length > 0
                 ? post.comments.map((comment, index) => <CommentBox key={index} comment={comment} />)
                 : null}
@@ -110,13 +106,13 @@ function PostManager({ post, character, index }: PostProps) {
 }
 
 // Renders an image post
-function ImagePost({ post, character, index }: PostProps) {
+function ImagePost({ post, index }: PostProps) {
     return (
         <div className="px-4">
             <div className="flex pb-4 w-full">
-                <img className="rounded-full w-20 me-8" src={imageURL(character.profile_path)} />
+                <img className="rounded-full w-20 me-8" src={imageURL(post.posted_by.profile_path)} />
                 <div className="flex flex-col justify-center">
-                    <p className="font-bold">{character.name}</p>
+                    <p className="font-bold">{post.posted_by.name}</p>
                     <p className="text-text-muted-dark">
                         {formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}
                     </p>
@@ -132,13 +128,13 @@ function ImagePost({ post, character, index }: PostProps) {
 }
 
 // Renders a text post
-function TextPost({ post, character, index }: PostProps) {
+function TextPost({ post, index }: PostProps) {
     return (
         <div className="px-4">
             <div className="flex pb-4  w-full">
-                <img className="rounded-full w-20 h-20 me-8" src={imageURL(character.profile_path)} />
+                <img className="rounded-full w-20 h-20 me-8" src={imageURL(post.posted_by.profile_path)} />
                 <div className="flex flex-col justify-center">
-                    <p className="font-bold">{character.name}</p>
+                    <p className="font-bold">{post.posted_by.name}</p>
                     <p className="text-text-muted-dark">
                         {formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}
                     </p>
@@ -159,7 +155,9 @@ function CommentBox({ comment }: CommentProps) {
             <img className="rounded-full w-10 h-10 me-4" src={imageURL(comment.posted_by.profile_path)} />
             <div className="flex flex-col justify-center">
                 <div className="flex space-x-2">
-                    <p className="font-bold">{comment.posted_by.name}</p>
+                    <Link to={`/characters/${comment.posted_by.path_name}`}>
+                        <p className="font-bold">{comment.posted_by.name}</p>
+                    </Link>
                     <p className="text-text-muted-dark">
                         {formatDistanceToNow(new Date(comment.timestamp), { addSuffix: true })}
                     </p>

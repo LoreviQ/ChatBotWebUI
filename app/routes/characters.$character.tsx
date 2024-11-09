@@ -49,6 +49,11 @@ export async function loader({ params }: LoaderFunctionArgs) {
 export default function CharactersData() {
     const { character, userPrefs } = useOutletContext<OutletContextFromCharacters>();
     const loaderData = useLoaderData<typeof loader>();
+    let posts: Post[] = [];
+    for (const post of loaderData.posts.data) {
+        post.posted_by = character;
+        posts.push(post);
+    }
     return (
         <div>
             <Outlet

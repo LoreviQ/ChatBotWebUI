@@ -51,7 +51,7 @@ export default function CharacterAll() {
                         character={character}
                         posts={posts}
                         userPrefs={userPrefs}
-                        component={false}
+                        hideSidebar={false}
                         detached={detached}
                     />
                 </div>
