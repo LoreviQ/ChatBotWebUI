@@ -39,6 +39,9 @@ export default function Posts() {
                 detached={detached}
                 pad={true}
                 border={false}
+                load={false}
+                loaderRef={undefined}
+                loading={undefined}
             />
         </div>
     );
@@ -51,9 +54,22 @@ interface PostLogProps {
     detached: boolean;
     pad: boolean;
     border: boolean;
+    load: boolean;
+    loaderRef: React.RefObject<HTMLDivElement> | undefined;
+    loading: boolean | undefined;
 }
 
-export function PostLog({ posts, userPrefs, hideSidebar: component, detached, pad, border }: PostLogProps) {
+export function PostLog({
+    posts,
+    userPrefs,
+    hideSidebar: component,
+    detached,
+    pad,
+    border,
+    load,
+    loaderRef,
+    loading,
+}: PostLogProps) {
     if (posts.length === 0) {
         return characterErrMessage("Oops! Looks like there are no posts to show");
     }
@@ -72,6 +88,12 @@ export function PostLog({ posts, userPrefs, hideSidebar: component, detached, pa
         return b.id - a.id;
     });
 
+    // if load assert types for loaderRef and loading
+    if (load) {
+        loaderRef = loaderRef as React.RefObject<HTMLDivElement>;
+        loading = loading as boolean;
+    }
+
     return (
         <div className="flex flex-col h-screen">
             <div
@@ -89,6 +111,7 @@ export function PostLog({ posts, userPrefs, hideSidebar: component, detached, pa
                         return <Post key={index} post={post} index={index} />;
                     })}
                 </div>
+                {load && <div ref={loaderRef}>{loading && <p>Loading more posts...</p>}</div>}
             </div>
             {detached && (
                 <WarningDualText
@@ -109,7 +132,7 @@ function Post({ post, index }: PostProps) {
     return (
         <>
             {index != 0 && <hr className="mt-4 border-text-muted-dark" />}
-            <div className="space-y-2 flex">
+            <div className="space-y-2 flex pe-2">
                 <img className="rounded-full w-10 h-10 m-4" src={imageURL(post.posted_by.profile_path)} />
                 <div>
                     <UserStamp

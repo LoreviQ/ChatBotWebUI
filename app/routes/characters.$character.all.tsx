@@ -54,6 +54,9 @@ export default function CharacterAll() {
                         detached={detached}
                         pad={true}
                         border={false}
+                        load={false}
+                        loaderRef={undefined}
+                        loading={undefined}
                     />
                 </div>
             </div>

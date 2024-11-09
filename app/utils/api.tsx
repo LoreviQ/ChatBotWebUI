@@ -4,7 +4,7 @@ export const API_VERSION = "v1";
 
 export function api() {
     return axios.create({
-        baseURL: process.env.API_URL,
+        baseURL: "http://localhost:5000/",
     });
 }
 
