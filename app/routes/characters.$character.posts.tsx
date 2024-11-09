@@ -95,7 +95,7 @@ interface PostProps {
 // Renders either an image or text post - with comments
 function PostManager({ post, character, index }: PostProps) {
     return (
-        <div>
+        <div className="space-y-2">
             {post.image_post && post.image_path ? <ImagePost post={post} character={character} index={index} /> : null}
             {post.image_post ? null : <TextPost post={post} character={character} index={index} />}
             {post.comments.length > 0
@@ -113,7 +113,7 @@ function ImagePost({ post, character, index }: PostProps) {
             <div className="flex pb-4 w-full">
                 <img className="rounded-full w-20 me-8" src={imageURL(character.profile_path)} />
                 <div className="flex flex-col justify-center">
-                    <p>{character.name}</p>
+                    <p className="font-bold">{character.name}</p>
                     <p className="text-text-muted-dark">
                         {formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}
                     </p>
@@ -133,9 +133,9 @@ function TextPost({ post, character, index }: PostProps) {
     return (
         <div className="px-4">
             <div className="flex pb-4  w-full">
-                <img className="rounded-full w-20 me-8" src={imageURL(character.profile_path)} />
+                <img className="rounded-full w-20 h-20 me-8" src={imageURL(character.profile_path)} />
                 <div className="flex flex-col justify-center">
-                    <p>{character.name}</p>
+                    <p className="font-bold">{character.name}</p>
                     <p className="text-text-muted-dark">
                         {formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}
                     </p>
@@ -151,7 +151,20 @@ interface CommentProps {
 }
 // renders a single comment
 function CommentBox({ comment }: CommentProps) {
-    return <div className="px-4">Comment Here</div>;
+    return (
+        <div className="flex pb-4 px-2 w-full">
+            <img className="rounded-full w-10 h-10 me-4" src={imageURL(comment.posted_by.profile_path)} />
+            <div className="flex flex-col justify-center">
+                <div className="flex space-x-2">
+                    <p className="font-bold">{comment.posted_by.name}</p>
+                    <p className="text-text-muted-dark">
+                        {formatDistanceToNow(new Date(comment.timestamp), { addSuffix: true })}
+                    </p>
+                </div>
+                <p className="pt-2 px-4" dangerouslySetInnerHTML={{ __html: formatPost(comment.content) }} />
+            </div>
+        </div>
+    );
 }
 
 // Custom formatting for post content
