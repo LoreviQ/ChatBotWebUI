@@ -74,13 +74,7 @@ export function PostLog({ character, posts, userPrefs, component, detached }: Po
                     if (scheduledPost && !userPrefs.debug) {
                         return null;
                     }
-                    if (post.image_post) {
-                        if (post.image_path) {
-                            return <ImagePost key={index} post={post} character={character} index={index} />;
-                        }
-                        return null;
-                    }
-                    return <TextPost key={index} post={post} character={character} index={index} />;
+                    return <PostManager key={index} post={post} character={character} index={index} />;
                 })}
             </div>
             {detached && (
@@ -93,14 +87,27 @@ export function PostLog({ character, posts, userPrefs, component, detached }: Po
     );
 }
 
-interface postProps {
+interface PostProps {
     post: Post;
     character: Character;
     index: number;
 }
+// Renders either an image or text post - with comments
+function PostManager({ post, character, index }: PostProps) {
+    return (
+        <div>
+            {post.image_post && post.image_path ? <ImagePost post={post} character={character} index={index} /> : null}
+            {post.image_post ? null : <TextPost post={post} character={character} index={index} />}
+            {post.comments.length > 0
+                ? post.comments.map((comment, index) => <CommentBox key={index} comment={comment} />)
+                : null}
+            {index != 0 && <hr className="mx-4 my-6 border-text-muted-dark" />}
+        </div>
+    );
+}
 
 // Renders an image post
-function ImagePost({ post, character, index }: postProps) {
+function ImagePost({ post, character, index }: PostProps) {
     return (
         <div className="px-4">
             <div className="flex pb-4 w-full">
@@ -117,13 +124,12 @@ function ImagePost({ post, character, index }: postProps) {
                 <div className="absolute bottom-0 left-0 w-full h-6 flex ">👍❤️😍🎉</div>
             </div>
             <p className="pt-2 px-6" dangerouslySetInnerHTML={{ __html: formatPost(post.content) }} />
-            {index != 0 && <hr className="mx-4 my-6 border-text-muted-dark" />}
         </div>
     );
 }
 
 // Renders a text post
-function TextPost({ post, character, index }: postProps) {
+function TextPost({ post, character, index }: PostProps) {
     return (
         <div className="px-4">
             <div className="flex pb-4  w-full">
@@ -136,9 +142,16 @@ function TextPost({ post, character, index }: postProps) {
                 </div>
             </div>
             <p className="pt-2 px-6" dangerouslySetInnerHTML={{ __html: formatPost(post.content) }} />
-            {index != 0 && <hr className="mx-4 my-6 border-text-muted-dark" />}
         </div>
     );
+}
+
+interface CommentProps {
+    comment: Comment;
+}
+// renders a single comment
+function CommentBox({ comment }: CommentProps) {
+    return <div className="px-4">Comment Here</div>;
 }
 
 // Custom formatting for post content
