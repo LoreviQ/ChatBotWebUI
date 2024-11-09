@@ -33,7 +33,7 @@ interface SidebarLinkProps {
 function SidebarLink({ to, text, icon }: SidebarLinkProps) {
     return (
         <Link to={to} className="text-2xl ">
-            <div className="inline-flex items-center pe-4 py-2 hover:bg-hover-dark rounded-lg">
+            <div className="inline-flex items-center pe-4 py-2 hover:bg-hover-dark rounded-full">
                 <div className="flex w-14 justify-center">
                     <FontAwesomeIcon icon={icon} />
                 </div>
