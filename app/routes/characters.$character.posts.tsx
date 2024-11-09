@@ -96,8 +96,11 @@ interface PostProps {
 function PostManager({ post, character, index }: PostProps) {
     return (
         <div className="space-y-2">
-            {post.image_post && post.image_path ? <ImagePost post={post} character={character} index={index} /> : null}
-            {post.image_post ? null : <TextPost post={post} character={character} index={index} />}
+            {post.image_post ? (
+                <ImagePost post={post} character={character} index={index} />
+            ) : (
+                <TextPost post={post} character={character} index={index} />
+            )}
             {post.comments.length > 0
                 ? post.comments.map((comment, index) => <CommentBox key={index} comment={comment} />)
                 : null}
