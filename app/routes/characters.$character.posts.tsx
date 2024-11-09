@@ -32,7 +32,14 @@ export default function Posts() {
     const { userPrefs, character, posts, events, detached } = useOutletContext<OutletContextFromCharacter>();
     return (
         <div className="container mx-auto max-w-2xl">
-            <PostLog posts={posts} userPrefs={userPrefs} hideSidebar={false} detached={detached} pad={true} />
+            <PostLog
+                posts={posts}
+                userPrefs={userPrefs}
+                hideSidebar={false}
+                detached={detached}
+                pad={true}
+                border={false}
+            />
         </div>
     );
 }
@@ -43,9 +50,10 @@ interface PostLogProps {
     hideSidebar: boolean;
     detached: boolean;
     pad: boolean;
+    border: boolean;
 }
 
-export function PostLog({ posts, userPrefs, hideSidebar: component, detached, pad }: PostLogProps) {
+export function PostLog({ posts, userPrefs, hideSidebar: component, detached, pad, border }: PostLogProps) {
     if (posts.length === 0) {
         return characterErrMessage("Oops! Looks like there are no posts to show");
     }
@@ -67,18 +75,20 @@ export function PostLog({ posts, userPrefs, hideSidebar: component, detached, pa
     return (
         <div className="flex flex-col h-screen">
             <div
-                className={`overflow-auto flex flex-grow flex-col ${
-                    component ? "hidden-scrollbar" : "custom-scrollbar"
-                }`}
+                className={`overflow-auto flex flex-grow flex-col 
+                    ${component ? "hidden-scrollbar" : "custom-scrollbar"}
+                `}
             >
-                {pad && <div className="h-20 flex-shrink-0" />}
-                {processedPosts.map((post, index) => {
-                    const scheduledPost = post.timestamp > new Date();
-                    if (scheduledPost && !userPrefs.debug) {
-                        return null;
-                    }
-                    return <Post key={index} post={post} index={index} />;
-                })}
+                <div className={`${border ? "border-r border-text-muted-dark" : ""}`}>
+                    {pad && <div className="h-20 flex-shrink-0" />}
+                    {processedPosts.map((post, index) => {
+                        const scheduledPost = post.timestamp > new Date();
+                        if (scheduledPost && !userPrefs.debug) {
+                            return null;
+                        }
+                        return <Post key={index} post={post} index={index} />;
+                    })}
+                </div>
             </div>
             {detached && (
                 <WarningDualText

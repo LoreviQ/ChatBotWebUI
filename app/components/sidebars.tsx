@@ -2,7 +2,7 @@ import { Link } from "@remix-run/react";
 
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHouse, faGhost } from "@fortawesome/free-solid-svg-icons";
+import { faHouse, faGhost, faSearch } from "@fortawesome/free-solid-svg-icons";
 
 import type { Cookie } from "../utils/cookies";
 
@@ -40,5 +40,22 @@ function SidebarLink({ to, text, icon }: SidebarLinkProps) {
                 <p>{text}</p>
             </div>
         </Link>
+    );
+}
+
+export function SearchBar({ userPrefs, loggedIn }: SidebarProps) {
+    return (
+        <div className="flex h-screen w-full justify-start py-4  border-text-muted-dark">
+            <div className="w-80 flex flex-col ps-8 space-y-4">
+                <div className="flex rounded-full border bg-hover-dark px-4 w-full items-center space-x-2">
+                    <FontAwesomeIcon icon={faSearch} />
+                    <input
+                        type="text"
+                        className="py-2 w-full bg-transparent border-transparent focus:border-transparent focus:ring-0"
+                        placeholder="Search"
+                    />
+                </div>
+            </div>
+        </div>
     );
 }

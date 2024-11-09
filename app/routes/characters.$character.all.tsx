@@ -47,7 +47,14 @@ export default function CharacterAll() {
                     />
                 </div>
                 <div className="w-1/3">
-                    <PostLog posts={posts} userPrefs={userPrefs} hideSidebar={false} detached={detached} pad={true} />
+                    <PostLog
+                        posts={posts}
+                        userPrefs={userPrefs}
+                        hideSidebar={false}
+                        detached={detached}
+                        pad={true}
+                        border={false}
+                    />
                 </div>
             </div>
         </div>

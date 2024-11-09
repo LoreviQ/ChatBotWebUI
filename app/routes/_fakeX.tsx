@@ -4,7 +4,7 @@ import { json } from "@remix-run/node";
 
 import type { Cookie } from "../utils/cookies";
 import { prefs, isJwtExpired } from "../utils/cookies";
-import { Sidebar } from "../components/sidebar";
+import { Sidebar, SearchBar } from "../components/sidebars";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
     const cookieHeader = request.headers.get("Cookie");
@@ -28,7 +28,9 @@ export default function FakeX() {
             <div className="w-1/3">
                 <Outlet context={userPrefs} />
             </div>
-            <div className="w-1/3">OTHER SIDEBAR THING HERE!</div>
+            <div className="w-1/3">
+                <SearchBar userPrefs={userPrefs} loggedIn={loaderData.auth.loggedIn} />
+            </div>
         </div>
     );
 }
