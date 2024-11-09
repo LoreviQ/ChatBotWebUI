@@ -2,6 +2,9 @@ import { formatDistanceToNow } from "date-fns";
 import { useOutletContext } from "react-router-dom";
 import { Link } from "@remix-run/react";
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faComment, faHeart } from "@fortawesome/free-solid-svg-icons";
+
 import type { Cookie } from "../utils/cookies";
 import type { Character } from "./characters";
 import type { OutletContextFromCharacter } from "./characters.$character";
@@ -141,6 +144,7 @@ function Post({ post, index }: PostProps) {
             />
             <PostContent className="ps-16 pe-4" text={post.content} />
             {post.image_post && post.image_path && <PostImage image_path={post.image_path} />}
+            <PostFooter comments_count={post.comments_count} likes_count={0} />
             <CommentLog comments_count={post.comments_count} comments={post.comments} />
         </div>
     );
@@ -175,6 +179,7 @@ function CommentBox({ comment }: CommentProps) {
                 timestamp={comment.timestamp}
             />
             <PostContent className="ps-16 pe-4" text={comment.content} />
+            <CommentFooter likes_count={0} />
         </div>
     );
 }
@@ -234,7 +239,39 @@ function PostImage({ image_path }: PostImageProps) {
         <div className="p-4">
             <div className="relative">
                 <img className="rounded-lg" src={imageURL(image_path)} />
-                <div className="absolute bottom-0 left-0 w-full h-6 flex ">👍❤️😍🎉</div>
+            </div>
+        </div>
+    );
+}
+
+interface PostFooterProps {
+    comments_count: number;
+    likes_count: number;
+}
+function PostFooter({ comments_count, likes_count }: PostFooterProps) {
+    return (
+        <div className="flex justify-start px-16 pt-4 space-x-8 text-text-muted-dark">
+            <div className="flex space-x-2">
+                <FontAwesomeIcon icon={faComment} />
+                <p>{comments_count}</p>
+            </div>
+            <div className="flex space-x-2">
+                <FontAwesomeIcon icon={faHeart} />
+                <p>{likes_count}</p>
+            </div>
+        </div>
+    );
+}
+
+interface CommentFooterProps {
+    likes_count: number;
+}
+function CommentFooter({ likes_count }: CommentFooterProps) {
+    return (
+        <div className="flex justify-start px-16 pt-4 space-x-8 text-text-muted-dark">
+            <div className="flex space-x-2">
+                <FontAwesomeIcon icon={faHeart} />
+                <p>{likes_count}</p>
             </div>
         </div>
     );
