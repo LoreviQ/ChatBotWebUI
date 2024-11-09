@@ -56,7 +56,6 @@ export default function CharacterAll() {
                         border={false}
                         load={false}
                         loaderRef={undefined}
-                        loading={undefined}
                     />
                 </div>
             </div>

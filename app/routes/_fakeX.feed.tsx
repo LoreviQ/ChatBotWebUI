@@ -36,26 +36,32 @@ export default function feed() {
     const loaderRef = useRef(null);
 
     useEffect(() => {
+        const currentLoaderRef = loaderRef.current;
         const observer = new IntersectionObserver(
             (entries) => {
                 if (entries[0].isIntersecting && !loading) {
                     setLoading(true);
-                    fetchMorePosts(offset);
+                    fetchMorePosts(offset).catch((error) => {
+                        console.error("Error in infinite scroll:", error);
+                        setLoading(false);
+                    });
                 }
             },
             {
-                threshold: 1,
+                threshold: 0,
+                rootMargin: "100px 0px",
             }
         );
-        if (loaderRef.current) {
-            observer.observe(loaderRef.current);
+        if (currentLoaderRef) {
+            observer.observe(currentLoaderRef);
         }
         return () => {
-            if (loaderRef.current) {
-                observer.unobserve(loaderRef.current);
+            if (currentLoaderRef) {
+                observer.unobserve(currentLoaderRef);
             }
+            observer.disconnect();
         };
-    }, [loaderRef, loading, offset]);
+    }, [loading, offset]);
 
     const fetchMorePosts = async (currentOffset: number) => {
         try {
@@ -67,9 +73,9 @@ export default function feed() {
                 setPosts((prevPosts) => [...prevPosts, ...newPosts]);
                 setOffset(newOffset);
             }
+            setLoading(false);
         } catch (error) {
             console.error("Error fetching posts", error);
-        } finally {
             setLoading(false);
         }
     };
@@ -85,7 +91,6 @@ export default function feed() {
                 border={true}
                 load={true}
                 loaderRef={loaderRef}
-                loading={loading}
             />
         </>
     );

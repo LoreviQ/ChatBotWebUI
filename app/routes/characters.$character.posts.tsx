@@ -30,6 +30,7 @@ export type Post = {
 
 export default function Posts() {
     const { userPrefs, character, posts, events, detached } = useOutletContext<OutletContextFromCharacter>();
+    console.log(posts);
     return (
         <div className="container mx-auto max-w-2xl">
             <PostLog
@@ -41,7 +42,6 @@ export default function Posts() {
                 border={false}
                 load={false}
                 loaderRef={undefined}
-                loading={undefined}
             />
         </div>
     );
@@ -56,7 +56,6 @@ interface PostLogProps {
     border: boolean;
     load: boolean;
     loaderRef: React.RefObject<HTMLDivElement> | undefined;
-    loading: boolean | undefined;
 }
 
 export function PostLog({
@@ -68,7 +67,6 @@ export function PostLog({
     border,
     load,
     loaderRef,
-    loading,
 }: PostLogProps) {
     if (posts.length === 0) {
         return characterErrMessage("Oops! Looks like there are no posts to show");
@@ -91,7 +89,6 @@ export function PostLog({
     // if load assert types for loaderRef and loading
     if (load) {
         loaderRef = loaderRef as React.RefObject<HTMLDivElement>;
-        loading = loading as boolean;
     }
 
     return (
@@ -111,7 +108,11 @@ export function PostLog({
                         return <Post key={index} post={post} index={index} />;
                     })}
                 </div>
-                {load && <div ref={loaderRef}>{loading && <LoadingMorePosts />}</div>}
+                {load && (
+                    <div ref={loaderRef}>
+                        <LoadingMorePosts />
+                    </div>
+                )}
             </div>
             {detached && (
                 <WarningDualText
@@ -130,31 +131,31 @@ interface PostProps {
 // Renders either an image or text post - with comments
 function Post({ post, index }: PostProps) {
     return (
-        <>
+        <div>
             {index != 0 && <hr className="mt-4 border-text-muted-dark" />}
-            <div className="space-y-2 flex pe-2">
+            <div className="flex pe-2 items-center">
                 <img className="rounded-full w-10 h-10 m-4" src={imageURL(post.posted_by.profile_path)} />
-                <div>
-                    <UserStamp
-                        username={post.posted_by.name}
-                        path_name={post.posted_by.path_name}
-                        timestamp={post.timestamp}
-                    />
-                    <PostContent text={post.content} />
-                    <div className="px-4">
-                        {post.image_post && post.image_path && (
-                            <div className="relative">
-                                <img className="rounded-lg" src={imageURL(post.image_path)} />
-                                <div className="absolute bottom-0 left-0 w-full h-6 flex ">👍❤️😍🎉</div>
-                            </div>
-                        )}
-                    </div>
-                    {post.comments.length > 0
-                        ? post.comments.map((comment, index) => <CommentBox key={index} comment={comment} />)
-                        : null}
-                </div>
+                <UserStamp
+                    username={post.posted_by.name}
+                    path_name={post.posted_by.path_name}
+                    timestamp={post.timestamp}
+                />
             </div>
-        </>
+            <PostContent className="ps-16" text={post.content} />
+            <div className="p-4">
+                {post.image_post && post.image_path && (
+                    <div className="relative">
+                        <img className="rounded-lg" src={imageURL(post.image_path)} />
+                        <div className="absolute bottom-0 left-0 w-full h-6 flex ">👍❤️😍🎉</div>
+                    </div>
+                )}
+            </div>
+            <div className="ps-8">
+                {post.comments.length > 0
+                    ? post.comments.map((comment, index) => <CommentBox key={index} comment={comment} />)
+                    : null}
+            </div>
+        </div>
     );
 }
 
@@ -164,16 +165,16 @@ interface CommentProps {
 // renders a single comment
 function CommentBox({ comment }: CommentProps) {
     return (
-        <div className="flex py-4 px-2 w-full">
-            <img className="rounded-full w-10 h-10 me-4" src={imageURL(comment.posted_by.profile_path)} />
-            <div className="flex flex-col justify-center">
+        <div>
+            <div className="flex pe-2 items-center">
+                <img className="rounded-full w-10 h-10 m-4" src={imageURL(comment.posted_by.profile_path)} />
                 <UserStamp
                     username={comment.posted_by.name}
                     path_name={comment.posted_by.path_name}
                     timestamp={comment.timestamp}
                 />
-                <PostContent text={comment.content} />
             </div>
+            <PostContent className="ps-16" text={comment.content} />
         </div>
     );
 }
@@ -200,12 +201,13 @@ function UserStamp({ username, path_name, timestamp }: UserStampProps) {
 
 // Custom formatting for post content
 interface PostContentProps {
+    className?: string;
     text: string;
 }
-function PostContent({ text }: PostContentProps) {
+function PostContent({ className, text }: PostContentProps) {
     text = text.replace(/(#\w+)/g, "<strong>$1</strong>");
     text = text.replace(/^"|"$/g, "");
-    return <p className="" dangerouslySetInnerHTML={{ __html: text }} />;
+    return <p className={className} dangerouslySetInnerHTML={{ __html: text }} />;
 }
 
 // Loading more posts box
