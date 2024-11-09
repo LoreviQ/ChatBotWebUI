@@ -19,6 +19,7 @@ export const endpoints = {
     characters: (query = "") => `${API_VERSION}/characters?${query}`,
     character: (char_path: string) => `${API_VERSION}/characters/${char_path}`,
     posts: (query = "") => `${API_VERSION}/posts?${query}`,
+    postComments: (post_id: string) => `${API_VERSION}/posts/${post_id}/comments`,
     login: () => `${API_VERSION}/login`,
     users: () => `${API_VERSION}/users`,
     readiness: () => `${API_VERSION}/readiness`,

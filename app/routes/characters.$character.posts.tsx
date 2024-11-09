@@ -1,8 +1,8 @@
-import { formatDistanceToNow } from "date-fns";
 import { useOutletContext } from "react-router-dom";
 import { Link } from "@remix-run/react";
 import { useState, useEffect, useRef } from "react";
 
+import { formatDistanceToNow, differenceInDays, format } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faComment, faHeart } from "@fortawesome/free-solid-svg-icons";
 
@@ -57,7 +57,6 @@ interface PostLogProps {
     pad: boolean;
     border: boolean;
 }
-
 export function PostLog({ initialPosts, userPrefs, hideScrollbar: component, detached, pad, border }: PostLogProps) {
     const [posts, setPosts] = useState<Post[]>(initialPosts ?? []);
     const [loading, setLoading] = useState(false);
@@ -140,12 +139,47 @@ export function PostLog({ initialPosts, userPrefs, hideScrollbar: component, det
     );
 }
 
+// States for showing comments
+enum CommentState {
+    Show1,
+    ShowAll,
+    Hide,
+}
+const commentStates = [CommentState.Show1, CommentState.ShowAll, CommentState.Hide] as const;
+const nextState = (current: CommentState) => {
+    const currentIndex = commentStates.indexOf(current);
+    const nextIndex = (currentIndex + 1) % commentStates.length;
+    return commentStates[nextIndex];
+};
+
+// Renders either an image or text post - with comments
 interface PostProps {
     post: Post;
     index: number;
 }
-// Renders either an image or text post - with comments
 function Post({ post, index }: PostProps) {
+    const [commentState, setCommentState] = useState<CommentState>(CommentState.Show1);
+    const [comments, setComments] = useState<Comment[]>(post.comments);
+
+    // If the commentState is ShowAll and the number of comments is less
+    // than the total number of comments, fetch the remaining comments
+    useEffect(() => {
+        console.log("commentState:", commentState);
+        if (commentState === CommentState.ShowAll && post.comments_count > comments.length) {
+            console.log("Fetching more comments");
+            expandComments(String(post.id));
+        }
+    }, [commentState]);
+    const expandComments = async (post_id: string) => {
+        try {
+            const response = await api().get(endpoints.postComments(post_id));
+            const newComments = await response.data;
+            setComments(newComments);
+        } catch (error) {
+            console.error("Error fetching comments", error);
+        }
+    };
+
     return (
         <div>
             {index != 0 && <hr className="mt-4 border-text-muted-dark" />}
@@ -157,28 +191,33 @@ function Post({ post, index }: PostProps) {
             />
             <PostContent className="ps-16 pe-4" text={post.content} />
             {post.image_post && post.image_path && <PostImage image_path={post.image_path} />}
-            <PostFooter comments_count={post.comments_count} likes_count={0} />
-            <CommentLog comments_count={post.comments_count} comments={post.comments} />
+            <PostFooter
+                comments_count={post.comments_count}
+                likes_count={0}
+                comment_state={commentState}
+                set_state={setCommentState}
+            />
+            <CommentLog comments={comments} commentState={commentState} />
         </div>
     );
 }
 
 interface CommentLogProps {
-    comments_count: number;
     comments: Comment[];
+    commentState: CommentState;
 }
-
-function CommentLog({ comments_count, comments }: CommentLogProps) {
+function CommentLog({ comments, commentState }: CommentLogProps) {
+    if (commentState === CommentState.Hide) {
+        return null;
+    }
+    if (commentState === CommentState.Show1) {
+        comments = comments.slice(0, 1);
+    }
     return (
         <div className="ps-8">
             {comments.length > 0
                 ? comments.map((comment, index) => <CommentBox key={index} comment={comment} />)
                 : null}
-            {comments_count > comments.length && (
-                <div className="flex justify-start px-16">
-                    <p className="px-4 py-2 font-bold rounded-full hover:bg-hover-dark">Load more comments...</p>
-                </div>
-            )}
         </div>
     );
 }
@@ -219,7 +258,11 @@ function UserStamp({ profile_path, username, path_name, timestamp }: UserStampPr
                     <p className="text-text-muted-dark">{`@${path_name}`}</p>
                 </Link>
                 <p className="text-text-muted-dark">
-                    {`· ${formatDistanceToNow(new Date(timestamp), { addSuffix: true })}`}
+                    {`· ${
+                        differenceInDays(new Date(), new Date(timestamp)) > 1
+                            ? format(new Date(timestamp), "d MMM · h:mma")
+                            : formatDistanceToNow(new Date(timestamp), { addSuffix: true })
+                    }`}
                 </p>
             </div>
         </div>
@@ -265,14 +308,16 @@ function PostImage({ image_path }: PostImageProps) {
 interface PostFooterProps {
     comments_count: number;
     likes_count: number;
+    comment_state: CommentState;
+    set_state: React.Dispatch<React.SetStateAction<CommentState>>;
 }
-function PostFooter({ comments_count, likes_count }: PostFooterProps) {
+function PostFooter({ comments_count, likes_count, comment_state: current_state, set_state }: PostFooterProps) {
     return (
         <div className="flex justify-start px-16 pt-4 space-x-8 text-text-muted-dark">
-            <div className="flex space-x-2">
+            <button className="flex space-x-2 hover:bg-hover-dark" onClick={() => set_state(nextState(current_state))}>
                 <FontAwesomeIcon icon={faComment} />
                 <p>{comments_count}</p>
-            </div>
+            </button>
             <div className="flex space-x-2">
                 <FontAwesomeIcon icon={faHeart} />
                 <p>{likes_count}</p>
