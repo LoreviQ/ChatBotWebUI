@@ -161,6 +161,11 @@ function CommentLog({ comments_count, comments }: CommentLogProps) {
             {comments.length > 0
                 ? comments.map((comment, index) => <CommentBox key={index} comment={comment} />)
                 : null}
+            {comments_count > comments.length && (
+                <div className="flex justify-start px-16">
+                    <p className="px-4 py-2 font-bold rounded-full hover:bg-hover-dark">Load more comments...</p>
+                </div>
+            )}
         </div>
     );
 }
