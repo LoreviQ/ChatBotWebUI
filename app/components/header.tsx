@@ -67,6 +67,9 @@ export function Header({ title, userPrefs, titleLink, loggedIn, showBackButton }
                         </fetcher.Form>
                     </div>
                     <div className="flex space-x-4">
+                        <Link to="/feed">
+                            <CharacterOutlineButton text="Feed" />
+                        </Link>
                         <Link to="/new">
                             <CharacterOutlineButton text="New Character" />
                         </Link>
