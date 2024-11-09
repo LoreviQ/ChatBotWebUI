@@ -30,7 +30,6 @@ export type Post = {
 
 export default function Posts() {
     const { userPrefs, character, posts, events, detached } = useOutletContext<OutletContextFromCharacter>();
-    console.log(posts);
     return (
         <div className="container mx-auto max-w-2xl">
             <PostLog
