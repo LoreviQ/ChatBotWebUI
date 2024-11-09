@@ -42,7 +42,7 @@ export async function action({ request }: ActionFunctionArgs) {
         global_positive: formData.get("global_positive"),
         global_negative: formData.get("global_negative"),
     };
-    const response = await api().post(endpoints.characters(), payload);
+    const response = await api.post(endpoints.characters(), payload);
     if (response.status === 200) {
         return redirect(`/characters/${response.data}`);
     }

@@ -14,7 +14,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         username: "Oliver",
         character: params.character!,
     };
-    const response = await api().post(endpoints.threads(), payload);
+    const response = await api.post(endpoints.threads(), payload);
     const data = await response.data;
     return redirect(`/characters/${params.character!}/chats/${data}`);
 }

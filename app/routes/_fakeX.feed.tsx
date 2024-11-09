@@ -11,14 +11,14 @@ export async function loader() {
     let postData: Post[], postStatus: number;
     try {
         const query = `limit=10&orderby=timestamp&order=desc`;
-        const response = await api().get(endpoints.posts(query));
+        const response = await api.get(endpoints.posts(query));
         postData = await response.data;
         postStatus = response.status;
     } catch (error) {
         postData = [];
         postStatus = 500;
     }
-    const response = await api().get(endpoints.detached());
+    const response = await api.get(endpoints.detached());
     const detached = (await response.data) === "True";
     return json({
         posts: { data: postData, status: postStatus },

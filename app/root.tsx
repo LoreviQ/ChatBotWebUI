@@ -1,4 +1,5 @@
-import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
+import type { LinksFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import {
     Links,
     Meta,
@@ -7,7 +8,7 @@ import {
     ScrollRestoration,
     useRouteError,
     isRouteErrorResponse,
-    redirect,
+    useLoaderData,
 } from "@remix-run/react";
 
 import "./tailwind.css";
@@ -43,7 +44,16 @@ export function ErrorBoundary() {
     );
 }
 
+export const loader = async () => {
+    return json({
+        ENV: {
+            API_URL: process.env.API_URL,
+        },
+    });
+};
+
 export function Layout({ children }: { children: React.ReactNode }) {
+    const data = useLoaderData<typeof loader>();
     return (
         <html lang="en">
             <head>
@@ -56,6 +66,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 {children}
                 <ScrollRestoration />
                 <Scripts />
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: `window.ENV = ${JSON.stringify(data.ENV)}`,
+                    }}
+                />
             </body>
         </html>
     );

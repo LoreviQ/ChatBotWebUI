@@ -96,7 +96,7 @@ export function PostLog({ initialPosts, userPrefs, hideScrollbar: component, det
         try {
             const newOffset = currentOffset + 10;
             const query = `limit=10&offset=${newOffset}&orderby=timestamp&order=desc`;
-            const response = await api().get(endpoints.posts(query));
+            const response = await api.get(endpoints.posts(query));
             const newPosts = await response.data;
             if (newPosts.length > 0) {
                 setPosts((prevPosts) => [...prevPosts, ...newPosts]);
@@ -173,7 +173,7 @@ function Post({ post, index }: PostProps) {
     }, [commentState]);
     const expandComments = async (post_id: string) => {
         try {
-            const response = await api().get(endpoints.postComments(post_id));
+            const response = await api.get(endpoints.postComments(post_id));
             const newComments = await response.data;
             setComments(newComments);
         } catch (error) {

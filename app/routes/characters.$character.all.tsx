@@ -14,7 +14,7 @@ export async function loader({}: LoaderFunctionArgs) {
     let messageData: Message[], messageStatus: number;
     // temporary, threads will be dynamic
     try {
-        const response = await api().get(endpoints.threadMessages("1"));
+        const response = await api.get(endpoints.threadMessages("1"));
         messageData = await response.data;
         messageStatus = response.status;
     } catch (error) {

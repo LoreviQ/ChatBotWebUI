@@ -18,7 +18,7 @@ export async function action({ request }: ActionFunctionArgs) {
         username: formData.get("username"),
         password: formData.get("password"),
     };
-    const response = await api().post(endpoints.login(), payload);
+    const response = await api.post(endpoints.login(), payload);
     if (response.status != 200) {
         return json({ error: "Login failed" }, { status: response.status });
     }

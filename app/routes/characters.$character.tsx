@@ -21,7 +21,7 @@ export interface OutletContextFromCharacter {
 export async function loader({ params }: LoaderFunctionArgs) {
     let eventData: Event[], eventStatus: number;
     try {
-        const response = await api().get(endpoints.characterEvents(params.character!));
+        const response = await api.get(endpoints.characterEvents(params.character!));
         eventData = await response.data;
         eventStatus = response.status;
     } catch (error) {
@@ -30,14 +30,14 @@ export async function loader({ params }: LoaderFunctionArgs) {
     }
     let postData: Post[], postStatus: number;
     try {
-        const response = await api().get(endpoints.characterPosts(params.character!));
+        const response = await api.get(endpoints.characterPosts(params.character!));
         postData = await response.data;
         postStatus = response.status;
     } catch (error) {
         postData = [];
         postStatus = 500;
     }
-    const response = await api().get(endpoints.detached());
+    const response = await api.get(endpoints.detached());
     const detached = (await response.data) === "True";
     return json({
         events: { data: eventData, status: eventStatus },

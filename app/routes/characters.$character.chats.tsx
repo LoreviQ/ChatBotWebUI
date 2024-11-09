@@ -25,7 +25,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     let threadData: Threads[], threadStatus: number;
     try {
         const query = `char_path=${params.character}`;
-        const response = await api().get(endpoints.usersThreads("Oliver", query));
+        const response = await api.get(endpoints.usersThreads("Oliver", query));
         threadData = await response.data;
         threadStatus = response.status;
     } catch (error) {

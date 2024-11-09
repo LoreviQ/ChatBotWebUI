@@ -24,7 +24,7 @@ export async function action({ request }: ActionFunctionArgs) {
         password: password,
         email: formData.get("email"),
     };
-    const response = await api().post(endpoints.users(), payload);
+    const response = await api.post(endpoints.users(), payload);
     if (response.status != 200) {
         return json({ error: "Registration failed" }, { status: response.status });
     }

@@ -2,11 +2,16 @@ import axios from "axios";
 
 export const API_VERSION = "v1";
 
-export function api() {
-    return axios.create({
-        baseURL: "http://localhost:5000/",
-    });
-}
+const getApiUrl = () => {
+    if (typeof window !== "undefined") {
+        return window.ENV.API_URL;
+    }
+    return process.env.API_URL;
+};
+
+export const api = axios.create({
+    baseURL: getApiUrl(),
+});
 
 export const endpoints = {
     threads: (query = "") => `${API_VERSION}/threads?${query}`,
@@ -32,7 +37,7 @@ export function imageURL(path: string) {
 }
 
 export async function uploadFileToGCS(file: File) {
-    const { data, status } = await api().post(endpoints.gcs_signed_url(), {
+    const { data, status } = await api.post(endpoints.gcs_signed_url(), {
         file_name: file.name,
         file_type: file.type,
     });
