@@ -31,8 +31,14 @@ export default function feed() {
     const loaderData = useLoaderData<typeof loader>();
     const posts = loaderData.posts.data as Post[];
     return (
-        <div className="container mx-auto max-w-2xl">
-            <PostLog posts={posts} userPrefs={userPrefs} hideSidebar={false} detached={loaderData.detached} />
+        <div className="container max-w-2xl">
+            <PostLog
+                posts={posts}
+                userPrefs={userPrefs}
+                hideSidebar={false}
+                detached={loaderData.detached}
+                pad={false}
+            />
         </div>
     );
 }

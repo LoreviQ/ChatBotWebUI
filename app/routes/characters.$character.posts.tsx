@@ -32,7 +32,7 @@ export default function Posts() {
     const { userPrefs, character, posts, events, detached } = useOutletContext<OutletContextFromCharacter>();
     return (
         <div className="container mx-auto max-w-2xl">
-            <PostLog posts={posts} userPrefs={userPrefs} hideSidebar={false} detached={detached} />
+            <PostLog posts={posts} userPrefs={userPrefs} hideSidebar={false} detached={detached} pad={true} />
         </div>
     );
 }
@@ -42,9 +42,10 @@ interface PostLogProps {
     userPrefs: Cookie;
     hideSidebar: boolean;
     detached: boolean;
+    pad: boolean;
 }
 
-export function PostLog({ posts, userPrefs, hideSidebar: component, detached }: PostLogProps) {
+export function PostLog({ posts, userPrefs, hideSidebar: component, detached, pad }: PostLogProps) {
     if (posts.length === 0) {
         return characterErrMessage("Oops! Looks like there are no posts to show");
     }
@@ -66,16 +67,17 @@ export function PostLog({ posts, userPrefs, hideSidebar: component, detached }: 
     return (
         <div className="flex flex-col h-screen">
             <div
-                className={`overflow-auto flex flex-grow flex-col-reverse pt-20  ${
+                className={`overflow-auto flex flex-grow flex-col ${
                     component ? "hidden-scrollbar" : "custom-scrollbar"
                 }`}
             >
+                {pad && <div className="h-20 flex-shrink-0" />}
                 {processedPosts.map((post, index) => {
                     const scheduledPost = post.timestamp > new Date();
                     if (scheduledPost && !userPrefs.debug) {
                         return null;
                     }
-                    return <PostManager key={index} post={post} index={index} />;
+                    return <Post key={index} post={post} index={index} />;
                 })}
             </div>
             {detached && (
@@ -93,59 +95,37 @@ interface PostProps {
     index: number;
 }
 // Renders either an image or text post - with comments
-function PostManager({ post, index }: PostProps) {
+function Post({ post, index }: PostProps) {
     return (
-        <div className="space-y-2 my-4">
-            {post.image_post ? <ImagePost post={post} index={index} /> : <TextPost post={post} index={index} />}
-            {post.comments.length > 0
-                ? post.comments.map((comment, index) => <CommentBox key={index} comment={comment} />)
-                : null}
-            {index != 0 && <hr className="mx-4 my-6 border-text-muted-dark" />}
-        </div>
-    );
-}
-
-// Renders an image post
-function ImagePost({ post, index }: PostProps) {
-    return (
-        <div className="px-4">
-            <div className="flex pb-4 w-full">
-                <img className="rounded-full w-20 me-8" src={imageURL(post.posted_by.profile_path)} />
-                <div className="flex flex-col justify-center">
-                    <Link to={`/characters/${post.posted_by.path_name}`}>
-                        <p className="font-bold">{post.posted_by.name}</p>
-                    </Link>
-                    <p className="text-text-muted-dark">
-                        {formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}
-                    </p>
+        <>
+            {index != 0 && <hr className="border-text-muted-dark" />}
+            <div className="space-y-2 flex">
+                <img className="rounded-full w-10 h-10 m-4" src={imageURL(post.posted_by.profile_path)} />
+                <div>
+                    <div className="flex h-10 w-full mb-4 items-center space-x-1">
+                        <Link className="flex space-x-1" to={`/characters/${post.posted_by.path_name}`}>
+                            <p className="font-bold">{post.posted_by.name}</p>
+                            <p className="text-text-muted-dark">{`@${post.posted_by.path_name}`}</p>
+                        </Link>
+                        <p className="text-text-muted-dark">
+                            {`· ${formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}`}
+                        </p>
+                    </div>
+                    <p className="pt-2" dangerouslySetInnerHTML={{ __html: formatPostContent(post.content) }} />
+                    <div className="px-4">
+                        {post.image_post && post.image_path && (
+                            <div className="relative">
+                                <img className="rounded-lg" src={imageURL(post.image_path)} />
+                                <div className="absolute bottom-0 left-0 w-full h-6 flex ">👍❤️😍🎉</div>
+                            </div>
+                        )}
+                    </div>
+                    {post.comments.length > 0
+                        ? post.comments.map((comment, index) => <CommentBox key={index} comment={comment} />)
+                        : null}
                 </div>
             </div>
-            <div className="relative">
-                <img className="rounded-lg" src={imageURL(post.image_path)} />
-                <div className="absolute bottom-0 left-0 w-full h-6 flex ">👍❤️😍🎉</div>
-            </div>
-            <p className="pt-2 px-6" dangerouslySetInnerHTML={{ __html: formatPost(post.content) }} />
-        </div>
-    );
-}
-
-// Renders a text post
-function TextPost({ post, index }: PostProps) {
-    return (
-        <div className="px-4">
-            <div className="flex pb-4  w-full">
-                <img className="rounded-full w-20 h-20 me-8" src={imageURL(post.posted_by.profile_path)} />
-                <div className="flex flex-col justify-center">
-                    <Link to={`/characters/${post.posted_by.path_name}`}>
-                        <p className="font-bold">{post.posted_by.name}</p>
-                    </Link>
-                    <p className="text-text-muted-dark">
-                        {formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}
-                    </p>
-                </div>
-            </div>
-            <p className="pt-2 px-6" dangerouslySetInnerHTML={{ __html: formatPost(post.content) }} />
-        </div>
+        </>
     );
 }
 
@@ -166,14 +146,14 @@ function CommentBox({ comment }: CommentProps) {
                         {formatDistanceToNow(new Date(comment.timestamp), { addSuffix: true })}
                     </p>
                 </div>
-                <p className="pt-2 px-4" dangerouslySetInnerHTML={{ __html: formatPost(comment.content) }} />
+                <p className="pt-2 px-4" dangerouslySetInnerHTML={{ __html: formatPostContent(comment.content) }} />
             </div>
         </div>
     );
 }
 
 // Custom formatting for post content
-function formatPost(text: string) {
+function formatPostContent(text: string) {
     text = text.replace(/(#\w+)/g, "<strong>$1</strong>");
     text = text.replace(/^"|"$/g, "");
     return text;
