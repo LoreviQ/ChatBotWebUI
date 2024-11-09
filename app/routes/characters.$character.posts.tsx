@@ -1,6 +1,7 @@
 import { formatDistanceToNow } from "date-fns";
 import { useOutletContext } from "react-router-dom";
 import { Link } from "@remix-run/react";
+import { useState, useEffect, useRef } from "react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faComment, faHeart } from "@fortawesome/free-solid-svg-icons";
@@ -9,8 +10,8 @@ import type { Cookie } from "../utils/cookies";
 import type { Character } from "./characters";
 import type { OutletContextFromCharacter } from "./characters.$character";
 import { imageURL } from "../utils/api";
-import { characterErrMessage } from "../utils/errors";
 import { WarningDualText } from "../components/warnings";
+import { api, endpoints } from "../utils/api";
 
 export type Comment = {
     id: number;
@@ -37,62 +38,76 @@ export default function Posts() {
     return (
         <div className="container mx-auto max-w-2xl">
             <PostLog
-                posts={posts}
+                initialPosts={posts}
                 userPrefs={userPrefs}
-                hideSidebar={false}
+                hideScrollbar={false}
                 detached={detached}
                 pad={true}
                 border={false}
-                load={false}
-                loaderRef={undefined}
             />
         </div>
     );
 }
 
 interface PostLogProps {
-    posts: Post[];
+    initialPosts: Post[];
     userPrefs: Cookie;
-    hideSidebar: boolean;
+    hideScrollbar: boolean;
     detached: boolean;
     pad: boolean;
     border: boolean;
-    load: boolean;
-    loaderRef: React.RefObject<HTMLDivElement> | undefined;
 }
 
-export function PostLog({
-    posts,
-    userPrefs,
-    hideSidebar: component,
-    detached,
-    pad,
-    border,
-    load,
-    loaderRef,
-}: PostLogProps) {
-    if (posts.length === 0) {
-        return characterErrMessage("Oops! Looks like there are no posts to show");
-    }
-    // process posts
-    let processedPosts = posts.map((post) => {
-        return {
-            ...post,
-            timestamp: new Date(post.timestamp),
-        };
-    });
-    processedPosts = processedPosts.sort((a, b) => {
-        const timeDifference = b.timestamp.getTime() - a.timestamp.getTime();
-        if (timeDifference !== 0) {
-            return timeDifference;
-        }
-        return b.id - a.id;
-    });
+export function PostLog({ initialPosts, userPrefs, hideScrollbar: component, detached, pad, border }: PostLogProps) {
+    const [posts, setPosts] = useState<Post[]>(initialPosts ?? []);
+    const [loading, setLoading] = useState(false);
+    const [offset, setOffset] = useState(0);
+    const loaderRef = useRef(null);
 
-    // if load assert types for loaderRef and loading
-    if (load) {
-        loaderRef = loaderRef as React.RefObject<HTMLDivElement>;
-    }
+    useEffect(() => {
+        const currentLoaderRef = loaderRef.current;
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && !loading) {
+                    setLoading(true);
+                    fetchMorePosts(offset).catch((error) => {
+                        console.error("Error in infinite scroll:", error);
+                        setLoading(false);
+                    });
+                }
+            },
+            {
+                threshold: 0,
+                rootMargin: "100px 0px",
+            }
+        );
+        if (currentLoaderRef) {
+            observer.observe(currentLoaderRef);
+        }
+        return () => {
+            if (currentLoaderRef) {
+                observer.unobserve(currentLoaderRef);
+            }
+            observer.disconnect();
+        };
+    }, [loading, offset]);
+
+    const fetchMorePosts = async (currentOffset: number) => {
+        try {
+            const newOffset = currentOffset + 10;
+            const query = `limit=10&offset=${newOffset}&orderby=timestamp&order=desc`;
+            const response = await api().get(endpoints.posts(query));
+            const newPosts = await response.data;
+            if (newPosts.length > 0) {
+                setPosts((prevPosts) => [...prevPosts, ...newPosts]);
+                setOffset(newOffset);
+            }
+            setLoading(false);
+        } catch (error) {
+            console.error("Error fetching posts", error);
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="flex flex-col h-screen">
@@ -103,7 +118,7 @@ export function PostLog({
             >
                 <div className={`${border ? "border-r border-text-muted-dark" : ""}`}>
                     {pad && <div className="h-20 flex-shrink-0" />}
-                    {processedPosts.map((post, index) => {
+                    {posts.map((post, index) => {
                         const scheduledPost = post.timestamp > new Date();
                         if (scheduledPost && !userPrefs.debug) {
                             return null;
@@ -111,11 +126,9 @@ export function PostLog({
                         return <Post key={index} post={post} index={index} />;
                     })}
                 </div>
-                {load && (
-                    <div ref={loaderRef}>
-                        <LoadingMorePosts />
-                    </div>
-                )}
+                <div ref={loaderRef}>
+                    <LoadingMorePosts />
+                </div>
             </div>
             {detached && (
                 <WarningDualText
@@ -280,4 +293,21 @@ function CommentFooter({ likes_count }: CommentFooterProps) {
             </div>
         </div>
     );
+}
+
+export function processPosts(posts: Post[]) {
+    let processedPosts = posts.map((post) => {
+        return {
+            ...post,
+            timestamp: new Date(post.timestamp),
+        };
+    });
+    processedPosts = processedPosts.sort((a, b) => {
+        const timeDifference = b.timestamp.getTime() - a.timestamp.getTime();
+        if (timeDifference !== 0) {
+            return timeDifference;
+        }
+        return b.id - a.id;
+    });
+    return processedPosts;
 }

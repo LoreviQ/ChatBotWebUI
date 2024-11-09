@@ -48,14 +48,12 @@ export default function CharacterAll() {
                 </div>
                 <div className="w-1/3">
                     <PostLog
-                        posts={posts}
+                        initialPosts={posts}
                         userPrefs={userPrefs}
-                        hideSidebar={false}
+                        hideScrollbar={false}
                         detached={detached}
                         pad={true}
                         border={false}
-                        load={false}
-                        loaderRef={undefined}
                     />
                 </div>
             </div>
