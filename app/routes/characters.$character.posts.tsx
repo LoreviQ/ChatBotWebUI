@@ -9,6 +9,7 @@ import { faComment, faHeart } from "@fortawesome/free-solid-svg-icons";
 import type { Cookie } from "../utils/cookies";
 import type { Character } from "./characters";
 import type { OutletContextFromCharacter } from "./characters.$character";
+import { FakeXFooterButton } from "~/components/buttons";
 import { imageURL } from "../utils/api";
 import { WarningDualText } from "../components/warnings";
 import { api, endpoints } from "../utils/api";
@@ -297,7 +298,7 @@ interface PostImageProps {
 }
 function PostImage({ image_path }: PostImageProps) {
     return (
-        <div className="p-4">
+        <div className="m-4">
             <div className="relative">
                 <img className="rounded-lg" src={imageURL(image_path)} />
             </div>
@@ -313,15 +314,13 @@ interface PostFooterProps {
 }
 function PostFooter({ comments_count, likes_count, comment_state: current_state, set_state }: PostFooterProps) {
     return (
-        <div className="flex justify-start px-16 pt-4 space-x-8 text-text-muted-dark">
-            <button className="flex space-x-2 hover:bg-hover-dark" onClick={() => set_state(nextState(current_state))}>
-                <FontAwesomeIcon icon={faComment} />
-                <p>{comments_count}</p>
-            </button>
-            <div className="flex space-x-2">
-                <FontAwesomeIcon icon={faHeart} />
-                <p>{likes_count}</p>
-            </div>
+        <div className="flex justify-start px-16 mt-4 space-x-8 text-text-muted-dark">
+            <FakeXFooterButton
+                icon={faComment}
+                count={comments_count}
+                onClick={() => set_state(nextState(current_state))}
+            />
+            <FakeXFooterButton icon={faHeart} count={likes_count} />
         </div>
     );
 }
@@ -332,10 +331,7 @@ interface CommentFooterProps {
 function CommentFooter({ likes_count }: CommentFooterProps) {
     return (
         <div className="flex justify-start px-16 pt-4 space-x-8 text-text-muted-dark">
-            <div className="flex space-x-2">
-                <FontAwesomeIcon icon={faHeart} />
-                <p>{likes_count}</p>
-            </div>
+            <FakeXFooterButton icon={faHeart} count={likes_count} />
         </div>
     );
 }
