@@ -98,20 +98,16 @@ interface PostProps {
 function Post({ post, index }: PostProps) {
     return (
         <>
-            {index != 0 && <hr className="border-text-muted-dark" />}
+            {index != 0 && <hr className="mt-4 border-text-muted-dark" />}
             <div className="space-y-2 flex">
                 <img className="rounded-full w-10 h-10 m-4" src={imageURL(post.posted_by.profile_path)} />
                 <div>
-                    <div className="flex h-10 w-full mb-4 items-center space-x-1">
-                        <Link className="flex space-x-1" to={`/characters/${post.posted_by.path_name}`}>
-                            <p className="font-bold">{post.posted_by.name}</p>
-                            <p className="text-text-muted-dark">{`@${post.posted_by.path_name}`}</p>
-                        </Link>
-                        <p className="text-text-muted-dark">
-                            {`· ${formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}`}
-                        </p>
-                    </div>
-                    <p className="pt-2" dangerouslySetInnerHTML={{ __html: formatPostContent(post.content) }} />
+                    <UserStamp
+                        username={post.posted_by.name}
+                        path_name={post.posted_by.path_name}
+                        timestamp={post.timestamp}
+                    />
+                    <PostContent text={post.content} />
                     <div className="px-4">
                         {post.image_post && post.image_path && (
                             <div className="relative">
@@ -135,26 +131,46 @@ interface CommentProps {
 // renders a single comment
 function CommentBox({ comment }: CommentProps) {
     return (
-        <div className="flex pb-4 px-2 w-full">
+        <div className="flex py-4 px-2 w-full">
             <img className="rounded-full w-10 h-10 me-4" src={imageURL(comment.posted_by.profile_path)} />
             <div className="flex flex-col justify-center">
-                <div className="flex space-x-2">
-                    <Link to={`/characters/${comment.posted_by.path_name}`}>
-                        <p className="font-bold">{comment.posted_by.name}</p>
-                    </Link>
-                    <p className="text-text-muted-dark">
-                        {formatDistanceToNow(new Date(comment.timestamp), { addSuffix: true })}
-                    </p>
-                </div>
-                <p className="pt-2 px-4" dangerouslySetInnerHTML={{ __html: formatPostContent(comment.content) }} />
+                <UserStamp
+                    username={comment.posted_by.name}
+                    path_name={comment.posted_by.path_name}
+                    timestamp={comment.timestamp}
+                />
+                <PostContent text={comment.content} />
             </div>
         </div>
     );
 }
 
+// Custom formatting for user info
+interface UserStampProps {
+    username: string;
+    path_name: string;
+    timestamp: string | Date;
+}
+function UserStamp({ username, path_name, timestamp }: UserStampProps) {
+    return (
+        <div className="flex h-10 w-full mb-4 items-end space-x-1">
+            <Link className="flex space-x-1" to={`/characters/${path_name}`}>
+                <p className="font-bold">{username}</p>
+                <p className="text-text-muted-dark">{`@${path_name}`}</p>
+            </Link>
+            <p className="text-text-muted-dark">
+                {`· ${formatDistanceToNow(new Date(timestamp), { addSuffix: true })}`}
+            </p>
+        </div>
+    );
+}
+
 // Custom formatting for post content
-function formatPostContent(text: string) {
+interface PostContentProps {
+    text: string;
+}
+function PostContent({ text }: PostContentProps) {
     text = text.replace(/(#\w+)/g, "<strong>$1</strong>");
     text = text.replace(/^"|"$/g, "");
-    return text;
+    return <p className="" dangerouslySetInnerHTML={{ __html: text }} />;
 }
