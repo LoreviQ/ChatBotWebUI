@@ -1,4 +1,5 @@
 import axios from "axios";
+import { prefs } from "./cookies";
 
 export const API_VERSION = "v1";
 
@@ -12,6 +13,22 @@ const getApiUrl = () => {
 export const api = axios.create({
     baseURL: getApiUrl(),
 });
+
+api.interceptors.request.use(
+    async (config) => {
+        // Only run in browser environment where cookies are available
+        if (typeof window !== "undefined") {
+            const cookie = await prefs.parse(document.cookie);
+            if (cookie?.jwt) {
+                config.headers.Authorization = `Bearer ${cookie.jwt}`;
+            }
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
 export const endpoints = {
     threads: (query = "") => `${API_VERSION}/threads?${query}`,
