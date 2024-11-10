@@ -4,16 +4,17 @@ import { prefs } from "./cookies";
 export const API_VERSION = "v1";
 
 const getApiUrl = () => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && window.ENV && window.ENV.API_URL) {
         return window.ENV.API_URL;
     }
-    return process.env.API_URL;
+    return process.env.API_URL || "http://localhost:5000";
 };
 
 export const api = axios.create({
     baseURL: getApiUrl(),
 });
 
+/*
 api.interceptors.request.use(
     async (config) => {
         // Only run in browser environment where cookies are available
@@ -29,7 +30,7 @@ api.interceptors.request.use(
         return Promise.reject(error);
     }
 );
-
+*/
 export const endpoints = {
     threads: (query = "") => `${API_VERSION}/threads?${query}`,
     usersThreads: (username: string, query = "") => `${API_VERSION}/users/${username}/threads?${query}`,

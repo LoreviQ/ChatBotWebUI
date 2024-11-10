@@ -1,18 +1,10 @@
 import type { LinksFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-    Links,
-    Meta,
-    Outlet,
-    Scripts,
-    ScrollRestoration,
-    useRouteError,
-    isRouteErrorResponse,
-    useLoaderData,
-} from "@remix-run/react";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteError, useLoaderData } from "@remix-run/react";
 
 import "./tailwind.css";
 import "./styles.css";
+import { ErrorDisplay } from "./components/warnings";
 
 export const links: LinksFunction = () => [
     { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -30,17 +22,27 @@ export const links: LinksFunction = () => [
 export function ErrorBoundary() {
     const error = useRouteError();
     return (
-        <div className="flex w-full h-screen items-center justify-center">
-            <div className="p-10 bg-contrast border-2 text-character border-character rounded-lg">
-                <h1>
-                    {isRouteErrorResponse(error)
-                        ? `${error.status} ${error.statusText}`
-                        : error instanceof Error
-                        ? error.message
-                        : "Unknown Error"}
-                </h1>
-            </div>
-        </div>
+        <html lang="en">
+            <head>
+                <meta charSet="utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <Meta />
+                <Links />
+            </head>
+            <body>
+                <ErrorDisplay error={error} />
+                <ScrollRestoration />
+                <Scripts />
+                <script
+                    // default to localhost (will fail for production but bypasses the death spiral so the real API URL can be fetched from loader
+                    dangerouslySetInnerHTML={{
+                        __html: `window.ENV = ${JSON.stringify({
+                            API_URL: "http://localhost:5000",
+                        })}`,
+                    }}
+                />
+            </body>
+        </html>
     );
 }
 

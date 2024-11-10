@@ -1,3 +1,5 @@
+import { isRouteErrorResponse } from "@remix-run/react";
+
 interface WarningProps {
     text1: string;
     text2: string;
@@ -21,6 +23,22 @@ export function WarningDualText({ text1, text2 }: WarningProps) {
             <div>
                 <span className="font-medium">Warning!</span> {text1}
                 <p>{text2}</p>
+            </div>
+        </div>
+    );
+}
+
+export function ErrorDisplay({ error }: { error: any }) {
+    return (
+        <div className="flex w-full h-screen items-center justify-center">
+            <div className="p-10 bg-contrast border-2 text-character border-character rounded-lg">
+                <h1>
+                    {isRouteErrorResponse(error)
+                        ? `${error.status} ${error.statusText}`
+                        : error instanceof Error
+                        ? error.message
+                        : "Unknown Error"}
+                </h1>
             </div>
         </div>
     );
